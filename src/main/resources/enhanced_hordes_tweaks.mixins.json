@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.enhancedhordes.tweaks.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "enhanced_hordes_tweaks.refmap.json",
+  "mixins": [
+    "HordeTickMixin"
+  ],
+  "client": [],
+  "server": []
+}

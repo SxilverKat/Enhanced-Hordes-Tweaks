@@ -1,0 +1,39 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
+run-data
+
+# Files from Forge MDK
+forge*changelog.txt
+
+# Claude Code local settings
+.claude
+
+# Local dependency jars (not redistributed)
+libs
+
+# Extracted content from the Horde Hoard dependency — not our source
+/META-INF
+/assets
+/data
+/net
+/pack.mcmeta
