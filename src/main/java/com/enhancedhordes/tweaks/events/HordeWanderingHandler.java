@@ -1,9 +1,9 @@
 package com.enhancedhordes.tweaks.events;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
+import com.enhancedhordes.tweaks.config.ConfigCache;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,7 +15,6 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,7 +63,7 @@ public class HordeWanderingHandler {
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         if (event.getLevel().isClientSide()) return;
         if (!(event.getEntity() instanceof PathfinderMob mob)) return;
-        if (!isHordeMob(mob)) return;
+        if (!ConfigCache.isHordeMob(mob.getType())) return;
         mob.goalSelector.addGoal(6, new HordeWanderGoal(mob));
     }
 
@@ -111,7 +110,9 @@ public class HordeWanderingHandler {
 
         List<PathfinderMob> mobs = new ArrayList<>();
         for (Entity e : level.getAllEntities()) {
-            if (e instanceof PathfinderMob pm && pm.isAlive() && isHordeMob(pm)) {
+            if (e instanceof PathfinderMob pm && pm.isAlive() && ConfigCache.isHordeMob(pm.getType())
+                    && pm.getTarget() == null
+                    && HordeDeterminationHandler.getFollowedPlayer(pm.getUUID()) == null) {
                 mobs.add(pm);
             }
         }
@@ -132,31 +133,6 @@ public class HordeWanderingHandler {
         }
 
         int cap = EnhancedHordesTweaksConfig.maxHordeGroup;
-
-        if (prev != null) {
-            Map<UUID, Integer> priorRepByGroup = new HashMap<>();
-            for (int i = 0; i < n; i++) {
-                UUID priorGroup = prev.mobToGroup.get(mobs.get(i).getUUID());
-                if (priorGroup == null) continue;
-                Integer rep = priorRepByGroup.get(priorGroup);
-                if (rep == null) {
-                    priorRepByGroup.put(priorGroup, i);
-                    continue;
-                }
-                int ra = find(parent, rep);
-                int rb = find(parent, i);
-                if (ra == rb) continue;
-                int combined = size[ra] + size[rb];
-                if (cap > 0 && combined > cap) continue;
-                if (size[ra] < size[rb]) {
-                    int t = ra;
-                    ra = rb;
-                    rb = t;
-                }
-                parent[rb] = ra;
-                size[ra] = combined;
-            }
-        }
 
         for (int i = 0; i < n; i++) {
             PathfinderMob a = mobs.get(i);
@@ -183,6 +159,7 @@ public class HordeWanderingHandler {
             clusters.computeIfAbsent(find(parent, i), k -> new ArrayList<>()).add(i);
         }
 
+        Set<UUID> usedInheritedIds = new HashSet<>();
         for (Map.Entry<Integer, List<Integer>> entry : clusters.entrySet()) {
             List<Integer> indices = entry.getValue();
 
@@ -207,16 +184,19 @@ public class HordeWanderingHandler {
                 }
             }
 
-            GroupState state;
+            GroupState state = null;
             if (priorGroupIds.size() == 1) {
                 UUID inherited = priorGroupIds.iterator().next();
-                GroupState old = prev.groupsById.get(inherited);
-                state = new GroupState(old.groupId, old.direction, old.directionSetTick, sz_, centroid);
-                if (gameTime - state.directionSetTick >= directionChangeTicks) {
-                    state.direction = randomDirection();
-                    state.directionSetTick = gameTime;
+                if (usedInheritedIds.add(inherited)) {
+                    GroupState old = prev.groupsById.get(inherited);
+                    state = new GroupState(old.groupId, old.direction, old.directionSetTick, sz_, centroid);
+                    if (gameTime - state.directionSetTick >= directionChangeTicks) {
+                        state.direction = randomDirection();
+                        state.directionSetTick = gameTime;
+                    }
                 }
-            } else {
+            }
+            if (state == null) {
                 state = new GroupState(UUID.randomUUID(), randomDirection(), gameTime, sz_, centroid);
             }
 
@@ -245,12 +225,5 @@ public class HordeWanderingHandler {
             i = parent[i];
         }
         return i;
-    }
-
-    private static boolean isHordeMob(PathfinderMob mob) {
-        List<? extends String> ids = EnhancedHordesTweaksConfig.hordeMobs;
-        if (ids == null || ids.isEmpty()) return false;
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
-        return id != null && ids.contains(id.toString());
     }
 }

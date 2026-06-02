@@ -13,19 +13,6 @@ import org.slf4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Crashes startup with a summary of every invalid config entry. Runs at
- * FMLLoadCompleteEvent — by then all mods are loaded, the Forge registries are
- * frozen, and config values have been copied into EnhancedHordesTweaksConfig's
- * static fields by ModConfigEvent.Loading.
- *
- * Only validates string-list configs (entity IDs, block IDs, tag refs). Scalar
- * configs are range-checked by ForgeConfigSpec itself.
- *
- * Tag references (entries starting with '#') are format-checked only: tags are
- * data-driven and resolved from datapacks later at server start, so we cannot
- * confirm their existence at load-complete time.
- */
 @Mod.EventBusSubscriber(modid = EnhancedHordesTweaksMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class ConfigValidator {
 
@@ -85,8 +72,6 @@ public final class ConfigValidator {
                 continue;
             }
             if (entry.startsWith("#")) {
-                // Tag reference — validate the ResourceLocation format; actual tag
-                // existence is checked by the game at datapack load, not here.
                 String raw = entry.substring(1);
                 if (ResourceLocation.tryParse(raw) == null) {
                     errors.add(name + ": malformed tag id '" + entry + "'");

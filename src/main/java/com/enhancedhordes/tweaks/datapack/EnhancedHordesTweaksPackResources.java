@@ -20,16 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * A dynamic pack that generates tag JSON files from the Enhanced Hordes Tweaks config at runtime.
- * By using "replace": true, these override the defaults shipped with Enhanced Hordes.
- * Registered via AddPackFindersEvent with Pack.Position.TOP so it wins over EH's data.
- */
 public class EnhancedHordesTweaksPackResources implements PackResources {
 
     private static final String PACK_ID = "builtin/enhanced_hordes_tweaks";
 
-    // All tag ResourceLocations this pack provides (forge namespace)
     private static final ResourceLocation LOC_HORDES =
             new ResourceLocation("forge", "tags/entity_types/hordes");
     private static final ResourceLocation LOC_INTELLIGENT_TEAMS =
@@ -110,7 +104,7 @@ public class EnhancedHordesTweaksPackResources implements PackResources {
         if (deserializer == PackMetadataSection.TYPE) {
             return (T) new PackMetadataSection(
                     Component.literal("Enhanced Hordes Tweaks data"),
-                    15 // pack_format 15 = Minecraft 1.20.1 data packs
+                    15
             );
         }
         return null;
@@ -123,12 +117,7 @@ public class EnhancedHordesTweaksPackResources implements PackResources {
 
     @Override
     public void close() {
-        // Nothing to close — all data is generated on-demand from config
     }
-
-    // -----------------------------------------------------------------------
-    // JSON generation
-    // -----------------------------------------------------------------------
 
     @Nullable
     private String resolveJson(ResourceLocation location) {
@@ -164,18 +153,10 @@ public class EnhancedHordesTweaksPackResources implements PackResources {
         if (LOC_HIDDEN_ZOMBIE_BLOCKS.equals(location))
             return buildTagJson(EnhancedHordesTweaksConfig.enableHiddenZombies ? EnhancedHordesTweaksConfig.hiddenZombieBlocks : List.of());
         if (LOC_HORDE_BREAKABLE.equals(location))
-            // When block breaking is disabled, include minecraft:air in the tag.
-            // EH checks if air is in forge:horde_breakable before scanning — if it is,
-            // it skips the entire block-scan loop (offset 1422 ifne branch in HordeTickProcedure).
-            // This avoids the expensive area scan even when no blocks would be broken.
             return buildTagJson(EnhancedHordesTweaksConfig.enableHordeBlockBreaking ? EnhancedHordesTweaksConfig.hordeBreakableBlocks : List.of("minecraft:air"));
         return null;
     }
 
-    /**
-     * Builds a tag JSON with "replace": true so it fully overrides EH's shipped values.
-     * Entries starting with '#' are tag references; all others are plain IDs.
-     */
     private static String buildTagJson(List<? extends String> values) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n  \"replace\": true,\n  \"values\": [");
@@ -184,7 +165,6 @@ public class EnhancedHordesTweaksPackResources implements PackResources {
             for (int i = 0; i < values.size(); i++) {
                 String entry = values.get(i);
                 if (entry.startsWith("#")) {
-                    // Tag reference: { "id": "#minecraft:leaves", "required": false }
                     sb.append("    { \"id\": \"").append(entry).append("\", \"required\": false }");
                 } else {
                     sb.append("    \"").append(entry).append("\"");

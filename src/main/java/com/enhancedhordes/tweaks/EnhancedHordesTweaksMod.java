@@ -26,7 +26,6 @@ public class EnhancedHordesTweaksMod {
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, EnhancedHordesTweaksConfig.SPEC);
 
-        // Register the dynamic data pack finder on the mod event bus
         modEventBus.addListener(this::onAddPackFinders);
 
         LOGGER.info("[Enhanced Hordes Tweaks] Loaded.");
@@ -39,10 +38,10 @@ public class EnhancedHordesTweaksMod {
             Pack pack = Pack.readMetaAndCreate(
                     "builtin/enhanced_hordes_tweaks",
                     Component.literal("Enhanced Hordes Tweaks"),
-                    true,                          // required — always enabled
+                    true,
                     id -> new EnhancedHordesTweaksPackResources(),
                     PackType.SERVER_DATA,
-                    Pack.Position.TOP,             // highest priority, overrides EH defaults
+                    Pack.Position.TOP,
                     PackSource.BUILT_IN
             );
             if (pack != null) {

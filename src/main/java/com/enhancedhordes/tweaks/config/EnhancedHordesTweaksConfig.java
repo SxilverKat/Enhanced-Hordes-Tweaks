@@ -282,7 +282,7 @@ public class EnhancedHordesTweaksConfig {
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> HORDE_MOBS = BUILDER
             .comment(
-                "Entity types that count as 'horde' mobs.",
+                "Entity types that count as 'horde' mobs. Accepts entity IDs and entity tags.",
                 "These mobs will stack on each other and multiply (dig up more mobs)."
             )
             .defineListAllowEmpty("entityTags.hordeMobs",
@@ -294,13 +294,14 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:drowned",
                             "minecraft:slime"
                     ),
-                    obj -> obj instanceof String s && s.contains(":")
+                    obj -> obj instanceof String
             );
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> INTELLIGENT_TEAM_MOBS = BUILDER
             .comment(
                 "Entity types that form intelligent teams.",
-                "These mobs can coordinate attacks and dash away."
+                "These mobs can coordinate attacks and dash away.",
+                "Accepts entity IDs and entity tags."
             )
             .defineListAllowEmpty("entityTags.intelligentTeamMobs",
                     List.of(
@@ -308,12 +309,13 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:wither_skeleton",
                             "minecraft:stray"
                     ),
-                    obj -> obj instanceof String s && s.contains(":")
+                    obj -> obj instanceof String
             );
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> LEAPING_MOBS = BUILDER
             .comment(
-                "Entity types that can leap at targets."
+                "Entity types that can leap at targets.",
+                "Accepts entity IDs and entity tags."
             )
             .defineListAllowEmpty("entityTags.leapingMobs",
                     List.of(
@@ -323,12 +325,13 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:stray",
                             "minecraft:wither_skeleton"
                     ),
-                    obj -> obj instanceof String s && s.contains(":")
+                    obj -> obj instanceof String
             );
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> GRAVE_ROBBERS = BUILDER
             .comment(
-                "Entity types that can dig up (spawn) other horde mobs from the ground."
+                "Entity types that can dig up (spawn) other horde mobs from the ground.",
+                "Accepts entity IDs and entity tags."
             )
             .defineListAllowEmpty("entityTags.graveRobbers",
                     List.of(
@@ -336,12 +339,13 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:husk",
                             "minecraft:drowned"
                     ),
-                    obj -> obj instanceof String s && s.contains(":")
+                    obj -> obj instanceof String
             );
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> INTELLIGENT_PIGLINS = BUILDER
             .comment(
-                "Piglin entity types that receive intelligent behavior."
+                "Piglin entity types that receive intelligent behavior.",
+                "Accepts entity IDs and entity tags."
             )
             .defineListAllowEmpty("entityTags.intelligentPiglins",
                     List.of(
@@ -349,7 +353,7 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:piglin_brute",
                             "minecraft:zombified_piglin"
                     ),
-                    obj -> obj instanceof String s && s.contains(":")
+                    obj -> obj instanceof String
             );
 
     // -----------------------------------------------------------------------
@@ -371,7 +375,7 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:mossy_cobblestone",
                             "minecraft:packed_mud"
                     ),
-                    obj -> obj instanceof String s && (s.contains(":") || s.startsWith("#"))
+                    obj -> obj instanceof String
             );
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> HORDE_BREAKABLE_BLOCKS = BUILDER
@@ -391,7 +395,7 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:frosted_ice",
                             "minecraft:pointed_dripstone"
                     ),
-                    obj -> obj instanceof String s && (s.contains(":") || s.startsWith("#"))
+                    obj -> obj instanceof String
             );
 
     // -----------------------------------------------------------------------
@@ -551,6 +555,20 @@ public class EnhancedHordesTweaksConfig {
             )
             .defineInRange("hordeMentality.damageRatePerMob", 10, 1, 100);
 
+    private static final ForgeConfigSpec.IntValue HORDE_MENTALITY_DAMAGE_INCREASE_PER_DAY = BUILDER
+            .comment(
+                "Increases horde mob block damage each day",
+                "Range: 0 ~ 1000"
+            )
+            .defineInRange("hordeMentality.damageIncreasePerDay", 0, 0, 1000);
+
+    private static final ForgeConfigSpec.IntValue HORDE_MENTALITY_DAMAGE_MULTIPLIER_PER_DAY = BUILDER
+            .comment(
+                "Multiplies horde mob block damage each day",
+                "Range: 0 ~ 1000"
+            )
+            .defineInRange("hordeMentality.damageMultiplierPerDay", 0, 0, 1000);
+
     private static final ForgeConfigSpec.BooleanValue HORDE_MENTALITY_SCALE_WITH_DAMAGE = BUILDER
             .comment(
                 "Scale a mob's block damage contribution by its attack damage attribute.",
@@ -657,8 +675,7 @@ public class EnhancedHordesTweaksConfig {
     private static final ForgeConfigSpec.BooleanValue HORDE_MENTALITY_DROP_BLOCK_ITEMS = BUILDER
             .comment(
                 "Drop items when a block is broken by horde mentality.",
-                "WARNING: Enabling this is incompatible with Block Regeneration.",
-                "If both are active, mobs will repeatedly break and regen blocks, duplicating drops infinitely."
+                "This option is disabled when Block Regeneration is enabled."
             )
             .define("hordeMentality.dropBlockItems", false);
 
@@ -806,7 +823,7 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:ladder",
                             "minecraft:crafting_table"
                     ),
-                    obj -> obj instanceof String s && (s.contains(":") || s.startsWith("#"))
+                    obj -> obj instanceof String
             );
 
     private static final ForgeConfigSpec.IntValue HORDE_MENTALITY_TIER2_MIN_MOBS = BUILDER
@@ -861,7 +878,7 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:red_mushroom_block",
                             "minecraft:mushroom_stem"
                     ),
-                    obj -> obj instanceof String s && (s.contains(":") || s.startsWith("#"))
+                    obj -> obj instanceof String
             );
 
     private static final ForgeConfigSpec.IntValue HORDE_MENTALITY_TIER3_MIN_MOBS = BUILDER
@@ -907,7 +924,7 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:basalt",
                             "minecraft:smooth_basalt"
                     ),
-                    obj -> obj instanceof String s && (s.contains(":") || s.startsWith("#"))
+                    obj -> obj instanceof String
             );
 
     private static final ForgeConfigSpec.IntValue HORDE_MENTALITY_TIER4_MIN_MOBS = BUILDER
@@ -944,7 +961,7 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:dark_prismarine",
                             "minecraft:crying_obsidian"
                     ),
-                    obj -> obj instanceof String s && (s.contains(":") || s.startsWith("#"))
+                    obj -> obj instanceof String
             );
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> HORDE_MENTALITY_BLACKLIST_BLOCKS = BUILDER
@@ -954,7 +971,7 @@ public class EnhancedHordesTweaksConfig {
             )
             .defineListAllowEmpty("hordeMentality.blacklistBlocks",
                     List.of(),
-                    obj -> obj instanceof String s && (s.contains(":") || s.startsWith("#"))
+                    obj -> obj instanceof String
             );
 
     // -----------------------------------------------------------------------
@@ -1010,9 +1027,22 @@ public class EnhancedHordesTweaksConfig {
             )
             .define("universalHostility.enableHostileFear", false);
 
+    private static final ForgeConfigSpec.BooleanValue PROTECT_TAMED_ANIMALS = BUILDER
+            .comment(
+                "Protects tamed animals from being targeted."
+            )
+            .define("universalHostility.protectTamedAnimals", false);
+
+    private static final ForgeConfigSpec.BooleanValue PROTECT_NAMED_ENTITIES = BUILDER
+            .comment(
+                "Protects named entities from being targeted."
+            )
+            .define("universalHostility.protectNamedEntities", false);
+
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> HOSTILE_MOBS = BUILDER
             .comment(
-                "Mobs that will be universally hostile toward everything in hostilityTargetMobs."
+                "Mobs that will be universally hostile toward everything in hostilityTargetMobs.",
+                "Accepts entity IDs and entity tags."
             )
             .defineListAllowEmpty("universalHostility.hostileMobs",
                     List.of(
@@ -1021,12 +1051,13 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:husk",
                             "minecraft:drowned"
                     ),
-                    obj -> obj instanceof String s && s.contains(":")
+                    obj -> obj instanceof String
             );
 
     private static final ForgeConfigSpec.ConfigValue<List<? extends String>> HOSTILITY_TARGET_MOBS = BUILDER
             .comment(
-                "Mobs that will be targeted by every mob listed in hostileMobs."
+                "Mobs that will be targeted by every mob listed in hostileMobs.",
+                "Accepts entity IDs and entity tags."
             )
             .defineListAllowEmpty("universalHostility.hostilityTargetMobs",
                     List.of(
@@ -1053,7 +1084,7 @@ public class EnhancedHordesTweaksConfig {
                             "minecraft:sniffer",
                             "minecraft:polar_bear"
                     ),
-                    obj -> obj instanceof String s && s.contains(":")
+                    obj -> obj instanceof String
             );
 
     // -----------------------------------------------------------------------
@@ -1094,7 +1125,7 @@ public class EnhancedHordesTweaksConfig {
 
     private static final ForgeConfigSpec.BooleanValue ENABLE_HORDE_WANDERING = BUILDER
             .comment(
-                "Horde mobs will collect into groups. When two groups meet they merge. Incompatible with Zombie Awareness wandering hordes. "
+                "Horde mobs will collect into groups that roam together. Groups merge when they meet and split apart when their members spread out. Incompatible with Zombie Awareness wandering hordes."
             )
             .define("hordeWandering.enableHordeWandering", false);
 
@@ -1288,6 +1319,8 @@ public class EnhancedHordesTweaksConfig {
     public static boolean enableHordeMentality;
     public static int hordeMentalityGroupRadius;
     public static int hordeMentalityDamageRatePerMob;
+    public static int hordeMentalityDamageIncreasePerDay;
+    public static int hordeMentalityDamageMultiplierPerDay;
     public static boolean hordeMentalityScaleWithDamage;
     public static int hordeMentalityHardnessScaling;
     public static int hordeMentalityDamageLingerSeconds;
@@ -1341,6 +1374,8 @@ public class EnhancedHordesTweaksConfig {
     public static boolean enableHordeMentalityWhenChasingTargets;
     public static boolean allowHordeMentalityDigDownForHostility;
     public static int universalHostilityDaysBeforeActivation;
+    public static boolean protectTamedAnimals;
+    public static boolean protectNamedEntities;
     public static List<? extends String> hostileMobs;
     public static List<? extends String> hostilityTargetMobs;
 
@@ -1379,7 +1414,7 @@ public class EnhancedHordesTweaksConfig {
 
     public static boolean daysElapsedReached(Level level, int threshold) {
         if (threshold <= 0) return true;
-        return level.getDayTime() >= (long) threshold * 24000L;
+        return level.getGameTime() >= (long) threshold * 24000L;
     }
 
     @SubscribeEvent
@@ -1453,6 +1488,8 @@ public class EnhancedHordesTweaksConfig {
         hordeMentalityNightOnly = HORDE_MENTALITY_NIGHT_ONLY.get();
         hordeMentalityGroupRadius = HORDE_MENTALITY_GROUP_RADIUS.get();
         hordeMentalityDamageRatePerMob = HORDE_MENTALITY_DAMAGE_RATE_PER_MOB.get();
+        hordeMentalityDamageIncreasePerDay = HORDE_MENTALITY_DAMAGE_INCREASE_PER_DAY.get();
+        hordeMentalityDamageMultiplierPerDay = HORDE_MENTALITY_DAMAGE_MULTIPLIER_PER_DAY.get();
         hordeMentalityScaleWithDamage = HORDE_MENTALITY_SCALE_WITH_DAMAGE.get();
         hordeMentalityTierDamageScaling = HORDE_MENTALITY_TIER_DAMAGE_SCALING.get();
         hordeMentalityProgressiveScaling = HORDE_MENTALITY_PROGRESSIVE_SCALING.get();
@@ -1494,6 +1531,8 @@ public class EnhancedHordesTweaksConfig {
         enableHordeMentalityWhenChasingTargets = ENABLE_HORDE_MENTALITY_WHEN_CHASING_TARGETS.get();
         allowHordeMentalityDigDownForHostility = ENABLE_HORDE_MENTALITY_DIG_DOWN_FOR_HOSTILITY.get();
         universalHostilityDaysBeforeActivation = UNIVERSAL_HOSTILITY_DAYS_BEFORE_ACTIVATION.get();
+        protectTamedAnimals = PROTECT_TAMED_ANIMALS.get();
+        protectNamedEntities = PROTECT_NAMED_ENTITIES.get();
         hostileMobs = HOSTILE_MOBS.get();
         hostilityTargetMobs = HOSTILITY_TARGET_MOBS.get();
 
@@ -1529,5 +1568,7 @@ public class EnhancedHordesTweaksConfig {
         hordeSightIncreaseOverTime = HORDE_SIGHT_INCREASE_OVER_TIME.get();
         hordeSightIncreaseIntervalDays = HORDE_SIGHT_INCREASE_INTERVAL_DAYS.get();
         hordeSightIncreaseAmount = HORDE_SIGHT_INCREASE_AMOUNT.get();
+
+        ConfigCache.markDirty();
     }
 }

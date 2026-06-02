@@ -21,25 +21,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-/**
- * All redirects into HordeTickProcedure.execute (private overload).
- *
- * horde_hoard-1.3.1 was compiled with an older SRG scheme. Forge's remapper
- * translates those old SRGs to Mojang official names at load time, so by the
- * time Mixin processes the class the call sites carry official names.
- *
- * Confirmed mappings (via srg_to_official_1.20.1.tsrg):
- *   m_20254_ → setSecondsOnFire(I)V   (fire spread, offset ~1248)
- *   m_20256_ → setDeltaMovement(Vec3)V (baby throw ordinal 0, push ordinal 1)
- *   m_7292_  → addEffect(MobEffectInstance)Z (speed boost, ordinals 0-3)
- *   m_5776_  → isClientSide()Z         (NOT isDay — all 5 calls are server guards)
- * There is NO isDay() call in execute; EH applies speed whenever on-fire server-side.
- *
- * @At targets use SRG names because ModLauncher in this Forge version reports
- * `naming: srg` at runtime — method references in the bytecode remain as SRG
- * (m_XXXXX_) identifiers when Mixin processes the class. Using Mojang names here
- * produces "Scanned 1 target(s), (0/1) succeeded" injection failures.
- */
 @Mixin(targets = "net.mcreator.horde_hoard.procedures.HordeTickProcedure", remap = false)
 public class HordeTickMixin {
 
@@ -47,10 +28,6 @@ public class HordeTickMixin {
             "execute(Lnet/minecraftforge/eventbus/api/Event;" +
             "Lnet/minecraft/world/level/LevelAccessor;DDDLnet/minecraft/world/entity/Entity;)V";
 
-    // The entity currently being processed by HordeTickProcedure.execute. Captured at
-    // HEAD and cleared at RETURN so redirects into vanilla calls (which don't carry
-    // the tick entity as an argument) can still discriminate on it — used for the
-    // baby-mob gates on block breaking. Server thread only; no synchronization needed.
     private static final ThreadLocal<Entity> CURRENT_ENTITY = new ThreadLocal<>();
 
     @Inject(method = EXECUTE, at = @At("HEAD"), remap = false)
@@ -65,10 +42,6 @@ public class HordeTickMixin {
         CURRENT_ENTITY.remove();
     }
 
-    // -----------------------------------------------------------------------
-    // Fire spreading — nearby entity ignited via setSecondsOnFire when source is on fire
-    // -----------------------------------------------------------------------
-
     @Redirect(method = EXECUTE,
         at = @At(value = "INVOKE",
             target = "Lnet/minecraft/world/entity/Entity;m_20254_(I)V",
@@ -80,10 +53,6 @@ public class HordeTickMixin {
                 nearbyEntity.level(), EnhancedHordesTweaksConfig.featuresDaysBeforeActivation)) return;
         nearbyEntity.setSecondsOnFire(seconds);
     }
-
-    // -----------------------------------------------------------------------
-    // Baby throw — ordinal 0 is the baby-mob launch; ordinal 1 is normal push
-    // -----------------------------------------------------------------------
 
     @Redirect(method = EXECUTE,
         at = @At(value = "INVOKE",
@@ -97,11 +66,6 @@ public class HordeTickMixin {
                 entity.level(), EnhancedHordesTweaksConfig.featuresDaysBeforeActivation)) return;
         entity.setDeltaMovement(velocity);
     }
-
-    // -----------------------------------------------------------------------
-    // Fire speed — EH applies MOVEMENT_SPEED any time a mob is on fire (server-side).
-    // We handle the on/off toggle and amplifier here.
-    // -----------------------------------------------------------------------
 
     @Redirect(method = EXECUTE,
         at = @At(value = "INVOKE",
@@ -130,15 +94,6 @@ public class HordeTickMixin {
         }
         return entity.addEffect(effectInstance);
     }
-
-    // -----------------------------------------------------------------------
-    // Block breaking — EH calls Block.dropResources then LevelAccessor.destroyBlock
-    // sequentially at the end of execute (offsets ~1508 and ~1541). We gate both on
-    // enableHordeBlockBreaking; when protectSupportingBlocks is true we also block
-    // breaks that would orphan a neighbor (e.g. dirt under a door/bed). The datapack
-    // tag-override path doesn't reliably win over EH's shipped tag, so this mixin is
-    // the authoritative off-switch.
-    // -----------------------------------------------------------------------
 
     @Redirect(method = EXECUTE,
         at = @At(value = "INVOKE",

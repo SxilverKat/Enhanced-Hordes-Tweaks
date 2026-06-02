@@ -1,8 +1,8 @@
 package com.enhancedhordes.tweaks.events;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
+import com.enhancedhordes.tweaks.config.ConfigCache;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -11,9 +11,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
-
-import java.util.List;
 
 @Mod.EventBusSubscriber(modid = EnhancedHordesTweaksMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class HeightenedSenseHandler {
@@ -28,7 +25,7 @@ public class HeightenedSenseHandler {
         if (mob.tickCount % CHECK_INTERVAL_TICKS != 0) return;
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
                 level, EnhancedHordesTweaksConfig.heightenedSenseDaysBeforeActivation)) return;
-        if (!isHordeMob(mob)) return;
+        if (!ConfigCache.isHordeMob(mob.getType())) return;
 
         LivingEntity current = mob.getTarget();
         if (current != null && current.isAlive()) return;
@@ -40,8 +37,8 @@ public class HeightenedSenseHandler {
         LivingEntity best = null;
         double bestDistSq = Double.MAX_VALUE;
 
-        for (Player player : level.getEntitiesOfClass(Player.class, box,
-                p -> p.isAlive() && !p.isCreative() && !p.isSpectator())) {
+        for (Player player : level.players()) {
+            if (!player.isAlive() || player.isCreative() || player.isSpectator()) continue;
             double d = mob.distanceToSqr(player);
             if (d <= rangeSq && d < bestDistSq) {
                 best = player;
@@ -49,9 +46,10 @@ public class HeightenedSenseHandler {
             }
         }
 
-        if (EnhancedHordesTweaksConfig.enableUniversalHostility) {
+        if (best == null && EnhancedHordesTweaksConfig.enableUniversalHostility) {
             for (LivingEntity candidate : level.getEntitiesOfClass(LivingEntity.class, box,
-                    HeightenedSenseHandler::isUniversalHostilityTarget)) {
+                    c -> c != mob && c.isAlive() && !UniversalHostilityHandler.isProtected(c)
+                            && ConfigCache.isHostilityTarget(c.getType()))) {
                 double d = mob.distanceToSqr(candidate);
                 if (d <= rangeSq && d < bestDistSq) {
                     best = candidate;
@@ -63,20 +61,5 @@ public class HeightenedSenseHandler {
         if (best != null) {
             mob.setTarget(best);
         }
-    }
-
-    private static boolean isHordeMob(LivingEntity mob) {
-        List<? extends String> ids = EnhancedHordesTweaksConfig.hordeMobs;
-        if (ids == null || ids.isEmpty()) return false;
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
-        return id != null && ids.contains(id.toString());
-    }
-
-    private static boolean isUniversalHostilityTarget(LivingEntity entity) {
-        if (!entity.isAlive()) return false;
-        List<? extends String> ids = EnhancedHordesTweaksConfig.hostilityTargetMobs;
-        if (ids == null || ids.isEmpty()) return false;
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        return id != null && ids.contains(id.toString());
     }
 }

@@ -40,8 +40,8 @@ public class CreeperWallExplosionHandler {
 
         if (creeper.getSwellDir() > 0) return;
 
-        if (canReachTarget(creeper, player)) return;
         if (!isTouchingWallTowardPlayer(level, creeper, player)) return;
+        if (canReachTarget(creeper, player)) return;
 
         creeper.ignite();
     }

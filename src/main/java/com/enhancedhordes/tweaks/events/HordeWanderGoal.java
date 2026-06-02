@@ -82,4 +82,9 @@ public class HordeWanderGoal extends Goal {
         if (mob.getTarget() != null) return false;
         return !mob.getNavigation().isDone();
     }
+
+    @Override
+    public void stop() {
+        mob.getNavigation().stop();
+    }
 }

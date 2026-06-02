@@ -1,19 +1,17 @@
 package com.enhancedhordes.tweaks.events;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
+import com.enhancedhordes.tweaks.config.ConfigCache;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
-import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.List;
 import java.util.function.Predicate;
 
 @Mod.EventBusSubscriber(modid = EnhancedHordesTweaksMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -30,14 +28,16 @@ public class PassiveFearHandler {
         if (event.getLevel().isClientSide()) return;
         if (!(event.getEntity() instanceof PathfinderMob mob)) return;
 
-        FearKind kind;
-        if (mob instanceof Animal) {
-            kind = mob instanceof NeutralMob ? FearKind.NEUTRAL : FearKind.PASSIVE;
-        } else {
-            kind = FearKind.HOSTILE;
-        }
+        if (!ConfigCache.isHostilityTarget(mob.getType())) return;
 
-        if (!isUniversalHostilityTarget(mob)) return;
+        FearKind kind;
+        if (mob instanceof Enemy) {
+            kind = FearKind.HOSTILE;
+        } else if (mob instanceof NeutralMob) {
+            kind = FearKind.NEUTRAL;
+        } else {
+            kind = FearKind.PASSIVE;
+        }
 
         Predicate<LivingEntity> predicate = candidate -> isActiveThreat(candidate, kind);
         mob.goalSelector.addGoal(2, new AvoidEntityGoal<>(
@@ -55,10 +55,7 @@ public class PassiveFearHandler {
         if (!isFearEnabledFor(kind)) return false;
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
                 candidate.level(), EnhancedHordesTweaksConfig.universalHostilityDaysBeforeActivation)) return false;
-        List<? extends String> ids = EnhancedHordesTweaksConfig.hostileMobs;
-        if (ids == null || ids.isEmpty()) return false;
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(candidate.getType());
-        return id != null && ids.contains(id.toString());
+        return ConfigCache.isHostileMob(candidate.getType());
     }
 
     private static boolean isFearEnabledFor(FearKind kind) {
@@ -67,12 +64,5 @@ public class PassiveFearHandler {
             case NEUTRAL -> EnhancedHordesTweaksConfig.enableNeutralFear;
             case HOSTILE -> EnhancedHordesTweaksConfig.enableHostileFear;
         };
-    }
-
-    private static boolean isUniversalHostilityTarget(LivingEntity entity) {
-        List<? extends String> ids = EnhancedHordesTweaksConfig.hostilityTargetMobs;
-        if (ids == null || ids.isEmpty()) return false;
-        ResourceLocation id = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        return id != null && ids.contains(id.toString());
     }
 }
