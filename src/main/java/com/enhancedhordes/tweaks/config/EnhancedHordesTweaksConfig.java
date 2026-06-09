@@ -3,6 +3,7 @@ package com.enhancedhordes.tweaks.config;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 
@@ -14,6 +15,76 @@ import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
 public class EnhancedHordesTweaksConfig {
 
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+
+    public static final boolean GAME_STAGES_INSTALLED = ModList.get().isLoaded("gamestages");
+
+    // -----------------------------------------------------------------------
+    // General
+    // -----------------------------------------------------------------------
+
+    private static final ForgeConfigSpec.EnumValue<DifficultyPreset> DIFFICULTY_PRESET = BUILDER
+            .comment(
+                "Difficulty preset applied on top of your config values.",
+                "NORMAL leaves values untouched. EASY softens.",
+                "A preset scales feature ranges, follow distances, over-time increases, mob block damage,",
+                "and shifts day activation thresholds. It does not enable or disable features for you.",
+                "Allowed values: EASY, NORMAL, HARD, NIGHTMARE"
+            )
+            .defineEnum("general.difficultyPreset", DifficultyPreset.NORMAL);
+
+    private static final ForgeConfigSpec.BooleanValue GLOBAL_NIGHT_ONLY = BUILDER
+            .comment(
+                "Suppress Enhanced Hordes features during daytime."
+            )
+            .define("general.globalNightOnly", false);
+
+    private static final ForgeConfigSpec.BooleanValue LIGHT_LEVEL_GATING = BUILDER
+            .comment(
+                "Only let horde mob features work where the light level is low enough."
+            )
+            .define("general.lightLevelGating", false);
+
+    private static final ForgeConfigSpec.IntValue MAX_ACTIVE_LIGHT_LEVEL = BUILDER
+            .comment(
+                "Highest light level at which features stay active when lightLevelGating is true.",
+                "Has no effect if lightLevelGating is false.",
+                "Range: 0 ~ 15"
+            )
+            .defineInRange("general.maxActiveLightLevel", 7, 0, 15);
+
+    // -----------------------------------------------------------------------
+    // Grace Radius
+    // -----------------------------------------------------------------------
+
+    private static final ForgeConfigSpec.BooleanValue ENABLE_GRACE_RADIUS = BUILDER
+            .comment(
+                "Suppress horde mob features near a protected point (world spawn or player beds).",
+                "Affects Horde Determination, Heightened Sense, and Collective Understanding (checked at the mob).",
+                "Also stops Horde Mentality from damaging any block inside a protected radius."
+            )
+            .define("graceRadius.enableGraceRadius", false);
+
+    private static final ForgeConfigSpec.IntValue GRACE_RADIUS = BUILDER
+            .comment(
+                "Block radius around a protected point within which features are suppressed.",
+                "Has no effect if enableGraceRadius is false.",
+                "Range: 1 ~ 256"
+            )
+            .defineInRange("graceRadius.radius", 24, 1, 256);
+
+    private static final ForgeConfigSpec.BooleanValue GRACE_USE_WORLD_SPAWN = BUILDER
+            .comment(
+                "Protect the area around the world spawn point.",
+                "Has no effect if enableGraceRadius is false."
+            )
+            .define("graceRadius.useWorldSpawn", true);
+
+    private static final ForgeConfigSpec.BooleanValue GRACE_USE_PLAYER_SPAWN = BUILDER
+            .comment(
+                "Protect the area around each player's bed or respawn point.",
+                "Has no effect if enableGraceRadius is false."
+            )
+            .define("graceRadius.usePlayerSpawn", true);
 
     // -----------------------------------------------------------------------
     // Feature Toggles
@@ -58,6 +129,12 @@ public class EnhancedHordesTweaksConfig {
                 "Range: 0 ~ 100"
             )
             .defineInRange("features.hordeFireDamageResistance", 0, 0, 100);
+
+    private static final ForgeConfigSpec.BooleanValue HORDE_FALL_DAMAGE_IMMUNITY = BUILDER
+            .comment(
+                "Horde mobs take no fall damage."
+            )
+            .define("features.hordeFallDamageImmunity", false);
 
     private static final ForgeConfigSpec.BooleanValue HORDE_BABY_THROW = BUILDER
             .comment(
@@ -1119,6 +1196,53 @@ public class EnhancedHordesTweaksConfig {
             )
             .defineInRange("hordeDetermination.daysBeforeActivation", 0, 0, 10000);
 
+    private static final ForgeConfigSpec.BooleanValue HORDE_DETERMINATION_DISTANCE_INCREASE_OVER_TIME = BUILDER
+            .comment(
+                "Should the horde mob follow distance increase over time?"
+            )
+            .define("hordeDetermination.followDistanceIncreaseOverTime", false);
+
+    private static final ForgeConfigSpec.IntValue HORDE_DETERMINATION_DISTANCE_INCREASE_INTERVAL_DAYS = BUILDER
+            .comment(
+                "How many in-game days between each follow distance increase.",
+                "Counting starts after daysBeforeActivation has elapsed.",
+                "Has no effect if followDistanceIncreaseOverTime is false.",
+                "Range: 1 ~ 10000"
+            )
+            .defineInRange("hordeDetermination.followDistanceIncreaseIntervalDays", 1, 1, 10000);
+
+    private static final ForgeConfigSpec.IntValue HORDE_DETERMINATION_DISTANCE_INCREASE_AMOUNT = BUILDER
+            .comment(
+                "How many blocks to add to the follow distance on each increase.",
+                "Has no effect if followDistanceIncreaseOverTime is false.",
+                "Range: 1 ~ 10000"
+            )
+            .defineInRange("hordeDetermination.followDistanceIncreaseAmount", 50, 1, 10000);
+
+    private static final ForgeConfigSpec.BooleanValue HORDE_DETERMINATION_TIME_INCREASE_OVER_TIME = BUILDER
+            .comment(
+                "Should the horde mob follow time increase over time?",
+                "Has no effect if followTimeMinutes is 0 (no time limit)."
+            )
+            .define("hordeDetermination.followTimeIncreaseOverTime", false);
+
+    private static final ForgeConfigSpec.IntValue HORDE_DETERMINATION_TIME_INCREASE_INTERVAL_DAYS = BUILDER
+            .comment(
+                "How many in-game days between each follow time increase.",
+                "Counting starts after daysBeforeActivation has elapsed.",
+                "Has no effect if followTimeIncreaseOverTime is false.",
+                "Range: 1 ~ 10000"
+            )
+            .defineInRange("hordeDetermination.followTimeIncreaseIntervalDays", 1, 1, 10000);
+
+    private static final ForgeConfigSpec.IntValue HORDE_DETERMINATION_TIME_INCREASE_AMOUNT = BUILDER
+            .comment(
+                "How many minutes to add to the follow time on each increase.",
+                "Has no effect if followTimeIncreaseOverTime is false.",
+                "Range: 1 ~ 1440"
+            )
+            .defineInRange("hordeDetermination.followTimeIncreaseAmount", 10, 1, 1440);
+
     // -----------------------------------------------------------------------
     // Horde Wandering
     // -----------------------------------------------------------------------
@@ -1175,10 +1299,16 @@ public class EnhancedHordesTweaksConfig {
     private static final ForgeConfigSpec.BooleanValue ENABLE_COLLECTIVE_UNDERSTANDING = BUILDER
             .comment(
                 "A horde mob that sees another horde mob currently pursuing a player",
-                "will pathfind to that same player.",
-                "Has no effect if enableHordeDetermination is false."
+                "will pathfind to that same player."
             )
             .define("collectiveUnderstanding.enableCollectiveUnderstanding", false);
+
+    private static final ForgeConfigSpec.IntValue COLLECTIVE_UNDERSTANDING_RANGE = BUILDER
+            .comment(
+                "Block range within which a horde mob will notice another horde mob pursuing a player.",
+                "Range: 1 ~ 128"
+            )
+            .defineInRange("collectiveUnderstanding.range", 50, 1, 128);
 
     private static final ForgeConfigSpec.IntValue COLLECTIVE_UNDERSTANDING_DAYS_BEFORE_ACTIVATION = BUILDER
             .comment(
@@ -1186,6 +1316,29 @@ public class EnhancedHordesTweaksConfig {
                 "Range: 0 ~ 10000"
             )
             .defineInRange("collectiveUnderstanding.daysBeforeActivation", 0, 0, 10000);
+
+    private static final ForgeConfigSpec.BooleanValue COLLECTIVE_UNDERSTANDING_INCREASE_OVER_TIME = BUILDER
+            .comment(
+                "Should the notice range increase over time?"
+            )
+            .define("collectiveUnderstanding.increaseOverTime", false);
+
+    private static final ForgeConfigSpec.IntValue COLLECTIVE_UNDERSTANDING_INCREASE_INTERVAL_DAYS = BUILDER
+            .comment(
+                "How many in-game days between each range increase.",
+                "Counting starts after daysBeforeActivation has elapsed.",
+                "Has no effect if increaseOverTime is false.",
+                "Range: 1 ~ 10000"
+            )
+            .defineInRange("collectiveUnderstanding.increaseIntervalDays", 1, 1, 10000);
+
+    private static final ForgeConfigSpec.IntValue COLLECTIVE_UNDERSTANDING_INCREASE_AMOUNT = BUILDER
+            .comment(
+                "How many blocks to add to the notice range on each increase.",
+                "Has no effect if increaseOverTime is false.",
+                "Range: 1 ~ 128"
+            )
+            .defineInRange("collectiveUnderstanding.increaseAmount", 5, 1, 128);
 
     // -----------------------------------------------------------------------
     // Heightened Sense
@@ -1211,6 +1364,29 @@ public class EnhancedHordesTweaksConfig {
                 "Range: 0 ~ 10000"
             )
             .defineInRange("heightenedSense.daysBeforeActivation", 0, 0, 10000);
+
+    private static final ForgeConfigSpec.BooleanValue HEIGHTENED_SENSE_INCREASE_OVER_TIME = BUILDER
+            .comment(
+                "Should the sense range increase over time?"
+            )
+            .define("heightenedSense.increaseOverTime", false);
+
+    private static final ForgeConfigSpec.IntValue HEIGHTENED_SENSE_INCREASE_INTERVAL_DAYS = BUILDER
+            .comment(
+                "How many in-game days between each sense range increase.",
+                "Counting starts after daysBeforeActivation has elapsed.",
+                "Has no effect if increaseOverTime is false.",
+                "Range: 1 ~ 10000"
+            )
+            .defineInRange("heightenedSense.increaseIntervalDays", 1, 1, 10000);
+
+    private static final ForgeConfigSpec.IntValue HEIGHTENED_SENSE_INCREASE_AMOUNT = BUILDER
+            .comment(
+                "How many blocks to add to the sense range on each increase.",
+                "Has no effect if increaseOverTime is false.",
+                "Range: 1 ~ 128"
+            )
+            .defineInRange("heightenedSense.increaseAmount", 5, 1, 128);
 
     // -----------------------------------------------------------------------
     // Horde Sight
@@ -1254,17 +1430,173 @@ public class EnhancedHordesTweaksConfig {
             )
             .defineInRange("hordeSight.increaseAmount", 1, 1, 256);
 
+    // -----------------------------------------------------------------------
+    // Notifications
+    // -----------------------------------------------------------------------
+
+    private static final ForgeConfigSpec.BooleanValue ENABLE_ACTIVATION_NOTIFICATIONS = BUILDER
+            .comment(
+                "Announce when a feature reaches its day activation threshold while players are online."
+            )
+            .define("notifications.enableActivationNotifications", false);
+
+    private static final ForgeConfigSpec.BooleanValue NOTIFICATION_PLAY_SOUND = BUILDER
+            .comment(
+                "Play a sound alongside each activation message.",
+                "Has no effect if enableActivationNotifications is false."
+            )
+            .define("notifications.playSound", true);
+
+    private static final ForgeConfigSpec.ConfigValue<String> NOTIFICATION_SOUND = BUILDER
+            .comment(
+                "Sound played on activation. Accepts a sound resource location.",
+                "Has no effect if playSound is false."
+            )
+            .define("notifications.sound", "minecraft:entity.wither.spawn");
+
+    private static final ForgeConfigSpec.ConfigValue<String> NOTIFY_FEATURES_MESSAGE = BUILDER
+            .comment(
+                "Message shown when the shared Features day threshold is reached.",
+                "Blank = no message. Supports & formatting codes."
+            )
+            .define("notifications.featuresMessage", "");
+
+    private static final ForgeConfigSpec.ConfigValue<String> NOTIFY_HORDE_MENTALITY_MESSAGE = BUILDER
+            .comment("Message shown when Horde Mentality activates. Blank = none. Supports & formatting codes.")
+            .define("notifications.hordeMentalityMessage", "");
+
+    private static final ForgeConfigSpec.ConfigValue<String> NOTIFY_UNIVERSAL_HOSTILITY_MESSAGE = BUILDER
+            .comment("Message shown when Universal Hostility activates. Blank = none. Supports & formatting codes.")
+            .define("notifications.universalHostilityMessage", "");
+
+    private static final ForgeConfigSpec.ConfigValue<String> NOTIFY_HORDE_DETERMINATION_MESSAGE = BUILDER
+            .comment("Message shown when Horde Determination activates. Blank = none. Supports & formatting codes.")
+            .define("notifications.hordeDeterminationMessage", "");
+
+    private static final ForgeConfigSpec.ConfigValue<String> NOTIFY_HORDE_WANDERING_MESSAGE = BUILDER
+            .comment("Message shown when Horde Wandering activates. Blank = none. Supports & formatting codes.")
+            .define("notifications.hordeWanderingMessage", "");
+
+    private static final ForgeConfigSpec.ConfigValue<String> NOTIFY_COLLECTIVE_UNDERSTANDING_MESSAGE = BUILDER
+            .comment("Message shown when Collective Understanding activates. Blank = none. Supports & formatting codes.")
+            .define("notifications.collectiveUnderstandingMessage", "");
+
+    private static final ForgeConfigSpec.ConfigValue<String> NOTIFY_HEIGHTENED_SENSE_MESSAGE = BUILDER
+            .comment("Message shown when Heightened Sense activates. Blank = none. Supports & formatting codes.")
+            .define("notifications.heightenedSenseMessage", "");
+
+    private static final ForgeConfigSpec.ConfigValue<String> NOTIFY_HORDE_SIGHT_MESSAGE = BUILDER
+            .comment("Message shown when Horde Sight activates. Blank = none. Supports & formatting codes.")
+            .define("notifications.hordeSightMessage", "");
+
+    private static final ForgeConfigSpec.ConfigValue<String> NOTIFY_CREEPER_WALL_EXPLOSION_MESSAGE = BUILDER
+            .comment("Message shown when Creeper Wall Explosion activates. Blank = none. Supports & formatting codes.")
+            .define("notifications.creeperWallExplosionMessage", "");
+
+    // -----------------------------------------------------------------------
+    // Game Stages
+    // -----------------------------------------------------------------------
+
+    private static ForgeConfigSpec.BooleanValue ENABLE_GAME_STAGES;
+    private static ForgeConfigSpec.ConfigValue<String> GAME_STAGES_HORDE_DETERMINATION_STAGE;
+    private static ForgeConfigSpec.ConfigValue<String> GAME_STAGES_HEIGHTENED_SENSE_STAGE;
+    private static ForgeConfigSpec.ConfigValue<String> GAME_STAGES_COLLECTIVE_UNDERSTANDING_STAGE;
+    private static ForgeConfigSpec.ConfigValue<String> GAME_STAGES_HORDE_MENTALITY_STAGE;
+    private static ForgeConfigSpec.ConfigValue<String> GAME_STAGES_HORDE_MULTIPLYING_STAGE;
+    private static ForgeConfigSpec.ConfigValue<String> GAME_STAGES_UNIVERSAL_HOSTILITY_STAGE;
+
+    static {
+        if (GAME_STAGES_INSTALLED) {
+            ENABLE_GAME_STAGES = BUILDER
+                    .comment(
+                        "Enable Game Stages integration.",
+                        "Per-player features (Horde Determination, Heightened Sense, Collective Understanding)",
+                        "only affect players who have the configured stage.",
+                        "World features (Horde Mentality, Horde Multiplying, Universal Hostility)",
+                        "stay active only while at least one online player has the configured stage.",
+                        "Leave a stage blank to apply that feature to all players."
+                    )
+                    .define("gameStages.enableGameStages", false);
+
+            GAME_STAGES_HORDE_DETERMINATION_STAGE = BUILDER
+                    .comment(
+                        "Game stage a player must have for Horde Determination to track them.",
+                        "Blank = applies to all players. Has no effect if enableGameStages is false."
+                    )
+                    .define("gameStages.hordeDeterminationStage", "");
+
+            GAME_STAGES_HEIGHTENED_SENSE_STAGE = BUILDER
+                    .comment(
+                        "Game stage a player must have to be sensed by Heightened Sense.",
+                        "Blank = applies to all players. Has no effect if enableGameStages is false."
+                    )
+                    .define("gameStages.heightenedSenseStage", "");
+
+            GAME_STAGES_COLLECTIVE_UNDERSTANDING_STAGE = BUILDER
+                    .comment(
+                        "Game stage a player must have for horde mobs to relay them through Collective Understanding.",
+                        "Blank = applies to all players. Has no effect if enableGameStages is false."
+                    )
+                    .define("gameStages.collectiveUnderstandingStage", "");
+
+            GAME_STAGES_HORDE_MENTALITY_STAGE = BUILDER
+                    .comment(
+                        "Game stage at least one online player must have for Horde Mentality to stay active.",
+                        "Blank = always active. Has no effect if enableGameStages is false."
+                    )
+                    .define("gameStages.hordeMentalityStage", "");
+
+            GAME_STAGES_HORDE_MULTIPLYING_STAGE = BUILDER
+                    .comment(
+                        "Game stage at least one online player must have for Horde Multiplying to stay active.",
+                        "Blank = always active. Has no effect if enableGameStages is false."
+                    )
+                    .define("gameStages.hordeMultiplyingStage", "");
+
+            GAME_STAGES_UNIVERSAL_HOSTILITY_STAGE = BUILDER
+                    .comment(
+                        "Game stage at least one online player must have for Universal Hostility to stay active.",
+                        "Blank = always active. Has no effect if enableGameStages is false."
+                    )
+                    .define("gameStages.universalHostilityStage", "");
+        }
+    }
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // -----------------------------------------------------------------------
     // Resolved values (populated by onLoad)
     // -----------------------------------------------------------------------
 
+    public static DifficultyPreset difficultyPreset;
+    public static boolean globalNightOnly;
+    public static boolean lightLevelGating;
+    public static int maxActiveLightLevel;
+
+    public static boolean enableGraceRadius;
+    public static int graceRadius;
+    public static boolean graceUseWorldSpawn;
+    public static boolean graceUsePlayerSpawn;
+
+    public static boolean enableActivationNotifications;
+    public static boolean notificationPlaySound;
+    public static String notificationSound;
+    public static String notifyFeaturesMessage;
+    public static String notifyHordeMentalityMessage;
+    public static String notifyUniversalHostilityMessage;
+    public static String notifyHordeDeterminationMessage;
+    public static String notifyHordeWanderingMessage;
+    public static String notifyCollectiveUnderstandingMessage;
+    public static String notifyHeightenedSenseMessage;
+    public static String notifyHordeSightMessage;
+    public static String notifyCreeperWallExplosionMessage;
+
     public static boolean enableHordeStacking;
     public static boolean hordeFireSpread;
     public static boolean hordeFireSpeedBoost;
     public static int hordeFireSpeedAmplifier;
     public static int hordeFireDamageResistance;
+    public static boolean hordeFallDamageImmunity;
     public static boolean hordeBabyThrow;
     public static boolean hordeBabyBlockBreaking;
     public static boolean hordeBabyFireSpeedBoost;
@@ -1383,6 +1715,12 @@ public class EnhancedHordesTweaksConfig {
     public static int hordeDeterminationFollowDistance;
     public static int hordeDeterminationFollowTimeMinutes;
     public static int hordeDeterminationDaysBeforeActivation;
+    public static boolean hordeDeterminationDistanceIncreaseOverTime;
+    public static int hordeDeterminationDistanceIncreaseIntervalDays;
+    public static int hordeDeterminationDistanceIncreaseAmount;
+    public static boolean hordeDeterminationTimeIncreaseOverTime;
+    public static int hordeDeterminationTimeIncreaseIntervalDays;
+    public static int hordeDeterminationTimeIncreaseAmount;
 
     public static boolean enableHordeWandering;
     public static int maxHordeGroup;
@@ -1400,17 +1738,32 @@ public class EnhancedHordesTweaksConfig {
     public static boolean enableHostileFear;
 
     public static boolean enableCollectiveUnderstanding;
+    public static int collectiveUnderstandingRange;
     public static int collectiveUnderstandingDaysBeforeActivation;
+    public static boolean collectiveUnderstandingIncreaseOverTime;
+    public static int collectiveUnderstandingIncreaseIntervalDays;
+    public static int collectiveUnderstandingIncreaseAmount;
 
     public static boolean enableHeightenedSense;
     public static int heightenedSenseRange;
     public static int heightenedSenseDaysBeforeActivation;
+    public static boolean heightenedSenseIncreaseOverTime;
+    public static int heightenedSenseIncreaseIntervalDays;
+    public static int heightenedSenseIncreaseAmount;
 
     public static int hordeSightRangeBonus;
     public static int hordeSightDaysBeforeActivation;
     public static boolean hordeSightIncreaseOverTime;
     public static int hordeSightIncreaseIntervalDays;
     public static int hordeSightIncreaseAmount;
+
+    public static boolean enableGameStages;
+    public static String hordeDeterminationStage;
+    public static String heightenedSenseStage;
+    public static String collectiveUnderstandingStage;
+    public static String hordeMentalityStage;
+    public static String hordeMultiplyingStage;
+    public static String universalHostilityStage;
 
     public static boolean daysElapsedReached(Level level, int threshold) {
         if (threshold <= 0) return true;
@@ -1420,11 +1773,36 @@ public class EnhancedHordesTweaksConfig {
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
         if (!event.getConfig().getModId().equals(EnhancedHordesTweaksMod.MODID)) return;
+
+        difficultyPreset = DIFFICULTY_PRESET.get();
+        globalNightOnly = GLOBAL_NIGHT_ONLY.get();
+        lightLevelGating = LIGHT_LEVEL_GATING.get();
+        maxActiveLightLevel = MAX_ACTIVE_LIGHT_LEVEL.get();
+
+        enableGraceRadius = ENABLE_GRACE_RADIUS.get();
+        graceRadius = GRACE_RADIUS.get();
+        graceUseWorldSpawn = GRACE_USE_WORLD_SPAWN.get();
+        graceUsePlayerSpawn = GRACE_USE_PLAYER_SPAWN.get();
+
+        enableActivationNotifications = ENABLE_ACTIVATION_NOTIFICATIONS.get();
+        notificationPlaySound = NOTIFICATION_PLAY_SOUND.get();
+        notificationSound = NOTIFICATION_SOUND.get();
+        notifyFeaturesMessage = NOTIFY_FEATURES_MESSAGE.get();
+        notifyHordeMentalityMessage = NOTIFY_HORDE_MENTALITY_MESSAGE.get();
+        notifyUniversalHostilityMessage = NOTIFY_UNIVERSAL_HOSTILITY_MESSAGE.get();
+        notifyHordeDeterminationMessage = NOTIFY_HORDE_DETERMINATION_MESSAGE.get();
+        notifyHordeWanderingMessage = NOTIFY_HORDE_WANDERING_MESSAGE.get();
+        notifyCollectiveUnderstandingMessage = NOTIFY_COLLECTIVE_UNDERSTANDING_MESSAGE.get();
+        notifyHeightenedSenseMessage = NOTIFY_HEIGHTENED_SENSE_MESSAGE.get();
+        notifyHordeSightMessage = NOTIFY_HORDE_SIGHT_MESSAGE.get();
+        notifyCreeperWallExplosionMessage = NOTIFY_CREEPER_WALL_EXPLOSION_MESSAGE.get();
+
         enableHordeStacking = ENABLE_HORDE_STACKING.get();
         hordeFireSpread = HORDE_FIRE_SPREAD.get();
         hordeFireSpeedBoost = HORDE_FIRE_SPEED_BOOST.get();
         hordeFireSpeedAmplifier = HORDE_FIRE_SPEED_AMPLIFIER.get();
         hordeFireDamageResistance = HORDE_FIRE_DAMAGE_RESISTANCE.get();
+        hordeFallDamageImmunity = HORDE_FALL_DAMAGE_IMMUNITY.get();
         hordeBabyThrow = HORDE_BABY_THROW.get();
         hordeBabyBlockBreaking = HORDE_BABY_BLOCK_BREAKING.get();
         hordeBabyFireSpeedBoost = HORDE_BABY_FIRE_SPEED_BOOST.get();
@@ -1540,6 +1918,12 @@ public class EnhancedHordesTweaksConfig {
         hordeDeterminationFollowDistance = HORDE_DETERMINATION_FOLLOW_DISTANCE.get();
         hordeDeterminationFollowTimeMinutes = HORDE_DETERMINATION_FOLLOW_TIME_MINUTES.get();
         hordeDeterminationDaysBeforeActivation = HORDE_DETERMINATION_DAYS_BEFORE_ACTIVATION.get();
+        hordeDeterminationDistanceIncreaseOverTime = HORDE_DETERMINATION_DISTANCE_INCREASE_OVER_TIME.get();
+        hordeDeterminationDistanceIncreaseIntervalDays = HORDE_DETERMINATION_DISTANCE_INCREASE_INTERVAL_DAYS.get();
+        hordeDeterminationDistanceIncreaseAmount = HORDE_DETERMINATION_DISTANCE_INCREASE_AMOUNT.get();
+        hordeDeterminationTimeIncreaseOverTime = HORDE_DETERMINATION_TIME_INCREASE_OVER_TIME.get();
+        hordeDeterminationTimeIncreaseIntervalDays = HORDE_DETERMINATION_TIME_INCREASE_INTERVAL_DAYS.get();
+        hordeDeterminationTimeIncreaseAmount = HORDE_DETERMINATION_TIME_INCREASE_AMOUNT.get();
 
         enableHordeWandering = ENABLE_HORDE_WANDERING.get();
         maxHordeGroup = MAX_HORDE_GROUP.get();
@@ -1557,11 +1941,18 @@ public class EnhancedHordesTweaksConfig {
         enableHostileFear = ENABLE_HOSTILE_FEAR.get();
 
         enableCollectiveUnderstanding = ENABLE_COLLECTIVE_UNDERSTANDING.get();
+        collectiveUnderstandingRange = COLLECTIVE_UNDERSTANDING_RANGE.get();
         collectiveUnderstandingDaysBeforeActivation = COLLECTIVE_UNDERSTANDING_DAYS_BEFORE_ACTIVATION.get();
+        collectiveUnderstandingIncreaseOverTime = COLLECTIVE_UNDERSTANDING_INCREASE_OVER_TIME.get();
+        collectiveUnderstandingIncreaseIntervalDays = COLLECTIVE_UNDERSTANDING_INCREASE_INTERVAL_DAYS.get();
+        collectiveUnderstandingIncreaseAmount = COLLECTIVE_UNDERSTANDING_INCREASE_AMOUNT.get();
 
         enableHeightenedSense = ENABLE_HEIGHTENED_SENSE.get();
         heightenedSenseRange = HEIGHTENED_SENSE_RANGE.get();
         heightenedSenseDaysBeforeActivation = HEIGHTENED_SENSE_DAYS_BEFORE_ACTIVATION.get();
+        heightenedSenseIncreaseOverTime = HEIGHTENED_SENSE_INCREASE_OVER_TIME.get();
+        heightenedSenseIncreaseIntervalDays = HEIGHTENED_SENSE_INCREASE_INTERVAL_DAYS.get();
+        heightenedSenseIncreaseAmount = HEIGHTENED_SENSE_INCREASE_AMOUNT.get();
 
         hordeSightRangeBonus = HORDE_SIGHT_RANGE_BONUS.get();
         hordeSightDaysBeforeActivation = HORDE_SIGHT_DAYS_BEFORE_ACTIVATION.get();
@@ -1569,6 +1960,68 @@ public class EnhancedHordesTweaksConfig {
         hordeSightIncreaseIntervalDays = HORDE_SIGHT_INCREASE_INTERVAL_DAYS.get();
         hordeSightIncreaseAmount = HORDE_SIGHT_INCREASE_AMOUNT.get();
 
+        if (GAME_STAGES_INSTALLED) {
+            enableGameStages = ENABLE_GAME_STAGES.get();
+            hordeDeterminationStage = GAME_STAGES_HORDE_DETERMINATION_STAGE.get();
+            heightenedSenseStage = GAME_STAGES_HEIGHTENED_SENSE_STAGE.get();
+            collectiveUnderstandingStage = GAME_STAGES_COLLECTIVE_UNDERSTANDING_STAGE.get();
+            hordeMentalityStage = GAME_STAGES_HORDE_MENTALITY_STAGE.get();
+            hordeMultiplyingStage = GAME_STAGES_HORDE_MULTIPLYING_STAGE.get();
+            universalHostilityStage = GAME_STAGES_UNIVERSAL_HOSTILITY_STAGE.get();
+        } else {
+            enableGameStages = false;
+            hordeDeterminationStage = "";
+            heightenedSenseStage = "";
+            collectiveUnderstandingStage = "";
+            hordeMentalityStage = "";
+            hordeMultiplyingStage = "";
+            universalHostilityStage = "";
+        }
+
+        applyDifficultyPreset();
+
         ConfigCache.markDirty();
+    }
+
+    private static void applyDifficultyPreset() {
+        if (difficultyPreset == null || !difficultyPreset.modifiesValues()) return;
+
+        double range = difficultyPreset.rangeMultiplier;
+        double days = difficultyPreset.daysMultiplier;
+        double inc = difficultyPreset.increaseMultiplier;
+        double dmg = difficultyPreset.damageMultiplier;
+
+        hordeDeterminationFollowDistance = clampScale(hordeDeterminationFollowDistance, range, 1, 10000);
+        if (hordeDeterminationFollowTimeMinutes > 0) {
+            hordeDeterminationFollowTimeMinutes = clampScale(hordeDeterminationFollowTimeMinutes, range, 1, 1440);
+        }
+        heightenedSenseRange = clampScale(heightenedSenseRange, range, 1, 128);
+        collectiveUnderstandingRange = clampScale(collectiveUnderstandingRange, range, 1, 128);
+        hordeSightRangeBonus = clampScale(hordeSightRangeBonus, range, 0, 256);
+
+        hordeMentalityDamageRatePerMob = clampScale(hordeMentalityDamageRatePerMob, dmg, 1, 100);
+
+        hordeDeterminationDistanceIncreaseAmount = clampScale(hordeDeterminationDistanceIncreaseAmount, inc, 1, 10000);
+        hordeDeterminationTimeIncreaseAmount = clampScale(hordeDeterminationTimeIncreaseAmount, inc, 1, 1440);
+        heightenedSenseIncreaseAmount = clampScale(heightenedSenseIncreaseAmount, inc, 1, 128);
+        collectiveUnderstandingIncreaseAmount = clampScale(collectiveUnderstandingIncreaseAmount, inc, 1, 128);
+        hordeSightIncreaseAmount = clampScale(hordeSightIncreaseAmount, inc, 1, 256);
+
+        featuresDaysBeforeActivation = clampScale(featuresDaysBeforeActivation, days, 0, 10000);
+        hordeMentalityDaysBeforeActivation = clampScale(hordeMentalityDaysBeforeActivation, days, 0, 10000);
+        universalHostilityDaysBeforeActivation = clampScale(universalHostilityDaysBeforeActivation, days, 0, 10000);
+        creeperWallExplosionDaysBeforeActivation = clampScale(creeperWallExplosionDaysBeforeActivation, days, 0, 10000);
+        hordeDeterminationDaysBeforeActivation = clampScale(hordeDeterminationDaysBeforeActivation, days, 0, 10000);
+        hordeWanderingDaysBeforeActivation = clampScale(hordeWanderingDaysBeforeActivation, days, 0, 10000);
+        collectiveUnderstandingDaysBeforeActivation = clampScale(collectiveUnderstandingDaysBeforeActivation, days, 0, 10000);
+        heightenedSenseDaysBeforeActivation = clampScale(heightenedSenseDaysBeforeActivation, days, 0, 10000);
+        hordeSightDaysBeforeActivation = clampScale(hordeSightDaysBeforeActivation, days, 0, 10000);
+    }
+
+    private static int clampScale(int base, double multiplier, int min, int max) {
+        long scaled = Math.round(base * multiplier);
+        if (scaled < min) scaled = min;
+        if (scaled > max) scaled = max;
+        return (int) scaled;
     }
 }

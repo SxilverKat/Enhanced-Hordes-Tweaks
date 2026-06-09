@@ -1,6 +1,7 @@
 package com.enhancedhordes.tweaks.events;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
+import com.enhancedhordes.tweaks.compat.GameStagesCompat;
 import com.enhancedhordes.tweaks.config.ConfigCache;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import com.mojang.brigadier.tree.CommandNode;
@@ -15,6 +16,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.level.LevelEvent;
@@ -152,5 +154,22 @@ public class GameRuleHandler {
         rules.getRule(HordeHoardModGameRules.IRONGOLEMREGENPOWER)
                 .set(EnhancedHordesTweaksConfig.enableIronGolemRegen
                         ? EnhancedHordesTweaksConfig.ironGolemRegenPower : 0, null);
+        lastMultiplyingValue = null;
+    }
+
+    private static Boolean lastMultiplyingValue = null;
+
+    @SubscribeEvent
+    public static void onServerTickMultiplying(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        if (event.getServer().getTickCount() % 20 != 0) return;
+
+        ServerLevel overworld = event.getServer().overworld();
+        boolean desired = EnhancedHordesTweaksConfig.enableHordeMultiplying
+                && GameStagesCompat.anyPlayerHasStage(overworld, EnhancedHordesTweaksConfig.hordeMultiplyingStage);
+        if (lastMultiplyingValue != null && lastMultiplyingValue == desired) return;
+
+        overworld.getGameRules().getRule(HordeHoardModGameRules.HORDEMULTIPLYING).set(desired, null);
+        lastMultiplyingValue = desired;
     }
 }

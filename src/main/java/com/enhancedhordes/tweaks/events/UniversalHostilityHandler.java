@@ -1,8 +1,11 @@
 package com.enhancedhordes.tweaks.events;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
+import com.enhancedhordes.tweaks.compat.GameStagesCompat;
 import com.enhancedhordes.tweaks.config.ConfigCache;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
+import com.enhancedhordes.tweaks.util.FeatureGate;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
@@ -32,6 +35,9 @@ public class UniversalHostilityHandler {
         if (!EnhancedHordesTweaksConfig.enableUniversalHostility) return false;
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
                 candidate.level(), EnhancedHordesTweaksConfig.universalHostilityDaysBeforeActivation)) return false;
+        if (FeatureGate.nightBlocked(candidate.level())) return false;
+        if (candidate.level() instanceof ServerLevel level
+                && !GameStagesCompat.anyPlayerHasStage(level, EnhancedHordesTweaksConfig.universalHostilityStage)) return false;
         if (isProtected(candidate)) return false;
         return ConfigCache.isHostilityTarget(candidate.getType());
     }

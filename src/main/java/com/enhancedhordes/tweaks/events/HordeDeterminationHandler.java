@@ -1,8 +1,10 @@
 package com.enhancedhordes.tweaks.events;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
+import com.enhancedhordes.tweaks.compat.GameStagesCompat;
 import com.enhancedhordes.tweaks.config.ConfigCache;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
+import com.enhancedhordes.tweaks.util.FeatureGate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.LivingEntity;
@@ -48,10 +50,11 @@ public class HordeDeterminationHandler {
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
                 level, EnhancedHordesTweaksConfig.hordeDeterminationDaysBeforeActivation)) return;
         if (!ConfigCache.isHordeMob(mob.getType())) return;
+        if (FeatureGate.blocked(mob)) return;
 
         long gameTime = level.getGameTime();
-        int maxDistance = EnhancedHordesTweaksConfig.hordeDeterminationFollowDistance;
-        int maxTimeMinutes = EnhancedHordesTweaksConfig.hordeDeterminationFollowTimeMinutes;
+        int maxDistance = computeFollowDistance(level);
+        int maxTimeMinutes = computeFollowTimeMinutes(level);
         long maxTicks = (long) maxTimeMinutes * 60L * 20L;
 
         LivingEntity target = mob.getTarget();
@@ -59,6 +62,11 @@ public class HordeDeterminationHandler {
         if (target instanceof Player player) {
             if (player.isCreative() || player.isSpectator()) {
                 mob.setTarget(null);
+                RECORDS.remove(mob.getUUID());
+                clearForcedPersistence(mob);
+                return;
+            }
+            if (!GameStagesCompat.allows(player, EnhancedHordesTweaksConfig.hordeDeterminationStage)) {
                 RECORDS.remove(mob.getUUID());
                 clearForcedPersistence(mob);
                 return;
@@ -89,7 +97,8 @@ public class HordeDeterminationHandler {
         if (player == null || player.isRemoved() || player.isSpectator()) {
             return;
         }
-        if (player.isCreative()) {
+        if (player.isCreative()
+                || !GameStagesCompat.allows(player, EnhancedHordesTweaksConfig.hordeDeterminationStage)) {
             RECORDS.remove(mob.getUUID());
             clearForcedPersistence(mob);
             return;
@@ -120,8 +129,9 @@ public class HordeDeterminationHandler {
         if (event.getServer().getTickCount() % PRUNE_INTERVAL_TICKS != 0) return;
         if (RECORDS.isEmpty()) return;
 
-        long gameTime = event.getServer().overworld().getGameTime();
-        int maxTimeMinutes = EnhancedHordesTweaksConfig.hordeDeterminationFollowTimeMinutes;
+        ServerLevel overworld = event.getServer().overworld();
+        long gameTime = overworld.getGameTime();
+        int maxTimeMinutes = computeFollowTimeMinutes(overworld);
         long maxTicks = (long) maxTimeMinutes * 60L * 20L;
 
         Iterator<Map.Entry<UUID, DeterminationRecord>> it = RECORDS.entrySet().iterator();
@@ -131,6 +141,34 @@ public class HordeDeterminationHandler {
                 it.remove();
             }
         }
+    }
+
+    private static int computeFollowDistance(ServerLevel level) {
+        int base = EnhancedHordesTweaksConfig.hordeDeterminationFollowDistance;
+        if (!EnhancedHordesTweaksConfig.hordeDeterminationDistanceIncreaseOverTime) return base;
+        long increments = incrementsSinceActivation(level,
+                EnhancedHordesTweaksConfig.hordeDeterminationDaysBeforeActivation,
+                EnhancedHordesTweaksConfig.hordeDeterminationDistanceIncreaseIntervalDays);
+        long distance = base + increments * (long) EnhancedHordesTweaksConfig.hordeDeterminationDistanceIncreaseAmount;
+        return (int) Math.min(distance, 10000L);
+    }
+
+    private static int computeFollowTimeMinutes(ServerLevel level) {
+        int base = EnhancedHordesTweaksConfig.hordeDeterminationFollowTimeMinutes;
+        if (base <= 0) return base;
+        if (!EnhancedHordesTweaksConfig.hordeDeterminationTimeIncreaseOverTime) return base;
+        long increments = incrementsSinceActivation(level,
+                EnhancedHordesTweaksConfig.hordeDeterminationDaysBeforeActivation,
+                EnhancedHordesTweaksConfig.hordeDeterminationTimeIncreaseIntervalDays);
+        long minutes = base + increments * (long) EnhancedHordesTweaksConfig.hordeDeterminationTimeIncreaseAmount;
+        return (int) Math.min(minutes, 1440L);
+    }
+
+    private static long incrementsSinceActivation(ServerLevel level, int thresholdDays, int intervalDays) {
+        long daysElapsed = level.getGameTime() / 24000L;
+        if (daysElapsed < thresholdDays) return 0L;
+        int interval = Math.max(1, intervalDays);
+        return (daysElapsed - thresholdDays) / interval;
     }
 
     private static void forcePersistence(Mob mob) {

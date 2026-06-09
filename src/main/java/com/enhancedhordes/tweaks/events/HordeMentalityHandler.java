@@ -1,9 +1,11 @@
 package com.enhancedhordes.tweaks.events;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
+import com.enhancedhordes.tweaks.compat.GameStagesCompat;
 import com.enhancedhordes.tweaks.config.ConfigCache;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import com.enhancedhordes.tweaks.util.BlockSupportUtil;
+import com.enhancedhordes.tweaks.util.FeatureGate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -53,7 +55,9 @@ public class HordeMentalityHandler {
 
         boolean active = EnhancedHordesTweaksConfig.enableHordeMentality
                 && EnhancedHordesTweaksConfig.daysElapsedReached(
-                        level, EnhancedHordesTweaksConfig.hordeMentalityDaysBeforeActivation);
+                        level, EnhancedHordesTweaksConfig.hordeMentalityDaysBeforeActivation)
+                && !FeatureGate.nightBlocked(level)
+                && GameStagesCompat.anyPlayerHasStage(level, EnhancedHordesTweaksConfig.hordeMentalityStage);
         if (!active) {
             LevelMentalityData existing = levelData.get(level.dimension());
             if (existing != null) clearAll(level, existing);
@@ -200,7 +204,9 @@ public class HordeMentalityHandler {
                         BlockPos pos = new BlockPos(x, y, z).immutable();
                         BlockState state = level.getBlockState(pos);
                         if (!state.isAir() && ConfigCache.isBreakableAtTier(state, qualifiedTier)
-                                && !ConfigCache.isMentalityBlacklisted(state)) {
+                                && !ConfigCache.isMentalityBlacklisted(state)
+                                && !FeatureGate.lightBlocked(level, pos)
+                                && !FeatureGate.graceBlocked(level, pos)) {
                             touchingBreakable.add(pos);
                         }
                     }
