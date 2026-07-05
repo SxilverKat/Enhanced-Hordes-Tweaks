@@ -5,7 +5,7 @@ import com.enhancedhordes.tweaks.compat.GameStagesCompat;
 import com.enhancedhordes.tweaks.config.ConfigCache;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import com.mojang.brigadier.tree.CommandNode;
-import net.mcreator.horde_hoard.init.HordeHoardModGameRules;
+import net.mcreator.horde_hoard.init.EnhancedHordesModGameRules;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -147,11 +147,11 @@ public class GameRuleHandler {
 
         GameRules rules = level.getGameRules();
 
-        rules.getRule(HordeHoardModGameRules.HORDESTACKING)
+        rules.getRule(EnhancedHordesModGameRules.HORDESTACKING)
                 .set(EnhancedHordesTweaksConfig.enableHordeStacking, null);
-        rules.getRule(HordeHoardModGameRules.HORDEMULTIPLYING)
+        rules.getRule(EnhancedHordesModGameRules.HORDEMULTIPLYING)
                 .set(EnhancedHordesTweaksConfig.enableHordeMultiplying, null);
-        rules.getRule(HordeHoardModGameRules.IRONGOLEMREGENPOWER)
+        rules.getRule(EnhancedHordesModGameRules.IRONGOLEMREGENPOWER)
                 .set(EnhancedHordesTweaksConfig.enableIronGolemRegen
                         ? EnhancedHordesTweaksConfig.ironGolemRegenPower : 0, null);
         lastMultiplyingValue = null;
@@ -169,7 +169,7 @@ public class GameRuleHandler {
                 && GameStagesCompat.anyPlayerHasStage(overworld, EnhancedHordesTweaksConfig.hordeMultiplyingStage);
         if (lastMultiplyingValue != null && lastMultiplyingValue == desired) return;
 
-        overworld.getGameRules().getRule(HordeHoardModGameRules.HORDEMULTIPLYING).set(desired, null);
+        overworld.getGameRules().getRule(EnhancedHordesModGameRules.HORDEMULTIPLYING).set(desired, null);
         lastMultiplyingValue = desired;
     }
 }
