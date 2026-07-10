@@ -1,0 +1,46 @@
+modLoader = "javafml"
+loaderVersion = "*"
+license = "MIT"
+issueTrackerURL = "https://www.curseforge.com/minecraft/mc-mods/enhanced-hordes-tweaks"
+
+[[mods]]
+modId = "${id}"
+version = "${version}"
+displayName = "${name}"
+authors = "Sxilverr"
+logoFile = "logo.png"
+description = '''Addon for Enhanced Hordes with configuration and many new features'''
+
+[[dependencies.${id}]]
+    modId = "neoforge"
+    type = "required"
+    versionRange = "*"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.${id}]]
+    modId = "minecraft"
+    type = "required"
+    versionRange = "${minecraft}"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.${id}]]
+    modId = "enhanced_hordes"
+    type = "required"
+    versionRange = "[1.0.0,)"
+    ordering = "AFTER"
+    side = "BOTH"
+
+[[dependencies.${id}]]
+    modId = "gamestages"
+    type = "optional"
+    versionRange = "*"
+    ordering = "AFTER"
+    side = "BOTH"
+
+[[accessTransformers]]
+file = "META-INF/accesstransformer.cfg"
+
+[[mixins]]
+config = "enhanced_hordes_tweaks.mixins.json"
