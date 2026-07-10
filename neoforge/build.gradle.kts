@@ -54,6 +54,9 @@ dependencies {
 }
 
 loom {
+    neoForge {
+        accessTransformer(file("../../src/main/resources/META-INF/accesstransformer.cfg"))
+    }
     runConfigs.all {
         isIdeConfigGenerated = true
         runDir = "../../../run"
