@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.events;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
 import com.enhancedhordes.tweaks.compat.GameStagesCompat;
@@ -23,10 +24,14 @@ public class CollectiveUnderstandingHandler {
     private static final double MAX_RANGE = 128.0;
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+    //?} else {
+    /*public static void onLivingTick(LivingEvent.LivingUpdateEvent event) {*/
+    //?}
         if (!EnhancedHordesTweaksConfig.enableCollectiveUnderstanding) return;
         if (!(event.getEntity() instanceof Mob observer)) return;
-        if (!(observer.level() instanceof ServerLevel level)) return;
+        if (!(VersionCompat.level(observer) instanceof ServerLevel level)) return;
         if (observer.tickCount % CHECK_INTERVAL_TICKS != 0) return;
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
                 level, EnhancedHordesTweaksConfig.collectiveUnderstandingDaysBeforeActivation)) return;

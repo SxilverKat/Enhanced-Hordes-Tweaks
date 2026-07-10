@@ -29,8 +29,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
+//? if >=1.19.2 {
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+//?} else {
+/*import net.minecraftforge.event.entity.EntityJoinWorldEvent;*/
+//?}
+//? if >=1.19.2 {
 import net.minecraftforge.event.level.LevelEvent;
+//?} else {
+/*import net.minecraftforge.event.world.WorldEvent;*/
+//?}
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -49,9 +57,17 @@ public class HordeMentalityHandler {
     private static boolean suppressDrops = false;
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLevelTick(TickEvent.LevelTickEvent event) {
+    //?} else {
+    /*public static void onLevelTick(TickEvent.WorldTickEvent event) {*/
+    //?}
         if (event.phase != TickEvent.Phase.END) return;
+        //? if >=1.19.2 {
         if (!(event.level instanceof ServerLevel level)) return;
+        //?} else {
+        /*if (!(event.world instanceof ServerLevel level)) return;*/
+        //?}
 
         boolean active = EnhancedHordesTweaksConfig.enableHordeMentality
                 && EnhancedHordesTweaksConfig.daysElapsedReached(
@@ -68,15 +84,27 @@ public class HordeMentalityHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
+    //? if >=1.19.2 {
     public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
+    //?} else {
+    /*public static void onEntityJoinLevel(EntityJoinWorldEvent event) {*/
+    //?}
         if (suppressDrops && event.getEntity() instanceof ItemEntity) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLevelUnload(LevelEvent.Unload event) {
+    //?} else {
+    /*public static void onLevelUnload(WorldEvent.Unload event) {*/
+    //?}
+        //? if >=1.19.2 {
         if (event.getLevel() instanceof ServerLevel level) {
+        //?} else {
+        /*if (event.getWorld() instanceof ServerLevel level) {*/
+        //?}
             LevelMentalityData data = levelData.remove(level.dimension());
             if (data != null) {
                 for (Map.Entry<BlockPos, Integer> e : data.breakerIds.entrySet()) {

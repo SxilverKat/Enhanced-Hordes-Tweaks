@@ -39,6 +39,7 @@ configurations {
 
 repositories {
     maven("https://maven.minecraftforge.net")
+    maven("https://cursemaven.com") { content { includeGroup("curse.maven") } }
     flatDir { dirs(rootProject.file("libs")) }
 }
 
@@ -47,7 +48,7 @@ dependencies {
     mappings(loom.officialMojangMappings())
     "forge"("net.minecraftforge:forge:$minecraft-${common.mod.dep("forge_loader")}")
 
-    modCompileOnly("blank:enhanced_hordes:1.1.0")
+    modCompileOnly(common.mod.dep("base_mod"))
 
     commonBundle(project(common.path, "namedElements")) { isTransitive = false }
     shadowBundle(project(common.path, "transformProductionForge")) { isTransitive = false }
@@ -93,7 +94,9 @@ tasks.processResources {
         "id" to mod.id,
         "name" to mod.name,
         "version" to mod.version,
-        "minecraft" to common.mod.prop("mc_dep_forgelike")
+        "minecraft" to common.mod.prop("mc_dep_forgelike"),
+        "forge_range" to common.mod.prop("forge_range"),
+        "base_modid" to common.mod.prop("base_modid")
     )
 }
 

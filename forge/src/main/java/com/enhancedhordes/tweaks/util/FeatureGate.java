@@ -16,7 +16,7 @@ public final class FeatureGate {
     }
 
     public static boolean blocked(Mob mob) {
-        if (!(mob.level() instanceof ServerLevel level)) return false;
+        if (!(VersionCompat.level(mob) instanceof ServerLevel level)) return false;
         if (nightBlocked(level)) return true;
         BlockPos pos = mob.blockPosition();
         if (lightBlocked(level, pos)) return true;

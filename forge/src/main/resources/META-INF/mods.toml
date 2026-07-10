@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[47,)"
+loaderVersion = "${forge_range}"
 license = "MIT"
 issueTrackerURL = "https://www.curseforge.com/minecraft/mc-mods/enhanced-hordes-tweaks"
 
@@ -14,7 +14,7 @@ description = '''Addon for Enhanced Hordes with configuration and many new featu
 [[dependencies.${id}]]
     modId = "forge"
     mandatory = true
-    versionRange = "[47,)"
+    versionRange = "${forge_range}"
     ordering = "NONE"
     side = "BOTH"
 
@@ -26,7 +26,7 @@ description = '''Addon for Enhanced Hordes with configuration and many new featu
     side = "BOTH"
 
 [[dependencies.${id}]]
-    modId = "enhanced_hordes"
+    modId = "${base_modid}"
     mandatory = true
     versionRange = "[1.0.0,)"
     ordering = "AFTER"

@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.events;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
 import com.enhancedhordes.tweaks.config.ConfigCache;
@@ -11,8 +12,16 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
+//? if >=1.19.2 {
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+//?} else {
+/*import net.minecraftforge.event.entity.EntityJoinWorldEvent;*/
+//?}
+//? if >=1.19.2 {
 import net.minecraftforge.event.level.LevelEvent;
+//?} else {
+/*import net.minecraftforge.event.world.WorldEvent;*/
+//?}
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -60,17 +69,33 @@ public class HordeWanderingHandler {
     private static final Random RNG = new Random();
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onEntityJoin(EntityJoinLevelEvent event) {
+    //?} else {
+    /*public static void onEntityJoin(EntityJoinWorldEvent event) {*/
+    //?}
+        //? if >=1.19.2 {
         if (event.getLevel().isClientSide()) return;
+        //?} else {
+        /*if (event.getWorld().isClientSide()) return;*/
+        //?}
         if (!(event.getEntity() instanceof PathfinderMob mob)) return;
         if (!ConfigCache.isHordeMob(mob.getType())) return;
         mob.goalSelector.addGoal(6, new HordeWanderGoal(mob));
     }
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLevelTick(TickEvent.LevelTickEvent event) {
+    //?} else {
+    /*public static void onLevelTick(TickEvent.WorldTickEvent event) {*/
+    //?}
         if (event.phase != TickEvent.Phase.END) return;
+        //? if >=1.19.2 {
         if (!(event.level instanceof ServerLevel serverLevel)) return;
+        //?} else {
+        /*if (!(event.world instanceof ServerLevel serverLevel)) return;*/
+        //?}
         if (!EnhancedHordesTweaksConfig.enableHordeWandering
                 || !isDayGateOpen(serverLevel)) {
             STATE.remove(serverLevel.dimension());
@@ -81,14 +106,22 @@ public class HordeWanderingHandler {
     }
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLevelUnload(LevelEvent.Unload event) {
+    //?} else {
+    /*public static void onLevelUnload(WorldEvent.Unload event) {*/
+    //?}
+        //? if >=1.19.2 {
         if (event.getLevel() instanceof ServerLevel serverLevel) {
+        //?} else {
+        /*if (event.getWorld() instanceof ServerLevel serverLevel) {*/
+        //?}
             STATE.remove(serverLevel.dimension());
         }
     }
 
     public static GroupState getGroup(LivingEntity mob) {
-        if (!(mob.level() instanceof ServerLevel serverLevel)) return null;
+        if (!(VersionCompat.level(mob) instanceof ServerLevel serverLevel)) return null;
         DimensionState dim = STATE.get(serverLevel.dimension());
         if (dim == null) return null;
         UUID groupId = dim.mobToGroup.get(mob.getUUID());

@@ -23,8 +23,16 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
+//? if >=1.19.2 {
 import net.minecraftforge.event.level.BlockEvent;
+//?} else {
+/*import net.minecraftforge.event.world.BlockEvent;*/
+//?}
+//? if >=1.19.2 {
 import net.minecraftforge.event.level.LevelEvent;
+//?} else {
+/*import net.minecraftforge.event.world.WorldEvent;*/
+//?}
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.Nullable;
@@ -45,7 +53,11 @@ public class BlockRegenerationHandler {
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         if (!EnhancedHordesTweaksConfig.enableBlockRegeneration) return;
+        //? if >=1.19.2 {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        //?} else {
+        /*if (!(event.getWorld() instanceof ServerLevel level)) return;*/
+        //?}
 
         BlockPos pos = event.getPos().immutable();
         LevelRegenData data = getOrCreate(level.dimension());
@@ -67,7 +79,11 @@ public class BlockRegenerationHandler {
         if (!EnhancedHordesTweaksConfig.enableBlockRegeneration) return;
         if (!EnhancedHordesTweaksConfig.cancelRegenOnPlayerPlace) return;
         if (!(event.getEntity() instanceof Player)) return;
+        //? if >=1.19.2 {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        //?} else {
+        /*if (!(event.getWorld() instanceof ServerLevel level)) return;*/
+        //?}
 
         BlockPos placePos = event.getPos().immutable();
         int radius = EnhancedHordesTweaksConfig.playerPlaceCancelRadius;
@@ -92,9 +108,17 @@ public class BlockRegenerationHandler {
     }
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLevelTick(TickEvent.LevelTickEvent event) {
+    //?} else {
+    /*public static void onLevelTick(TickEvent.WorldTickEvent event) {*/
+    //?}
         if (event.phase != TickEvent.Phase.END) return;
+        //? if >=1.19.2 {
         if (!(event.level instanceof ServerLevel level)) return;
+        //?} else {
+        /*if (!(event.world instanceof ServerLevel level)) return;*/
+        //?}
         if (!EnhancedHordesTweaksConfig.enableBlockRegeneration) return;
 
         LevelRegenData data = getOrCreate(level.dimension());
@@ -115,8 +139,16 @@ public class BlockRegenerationHandler {
     }
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLevelUnload(LevelEvent.Unload event) {
+    //?} else {
+    /*public static void onLevelUnload(WorldEvent.Unload event) {*/
+    //?}
+        //? if >=1.19.2 {
         if (event.getLevel() instanceof ServerLevel level) {
+        //?} else {
+        /*if (event.getWorld() instanceof ServerLevel level) {*/
+        //?}
             levelData.remove(level.dimension());
         }
     }

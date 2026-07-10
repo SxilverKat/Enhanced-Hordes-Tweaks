@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.events;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
@@ -23,10 +24,14 @@ public class CreeperWallExplosionHandler {
     private static final double WALL_TOUCH_REACH = 0.7;
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+    //?} else {
+    /*public static void onLivingTick(LivingEvent.LivingUpdateEvent event) {*/
+    //?}
         if (!EnhancedHordesTweaksConfig.enableCreeperWallExplosion) return;
         if (!(event.getEntity() instanceof Creeper creeper)) return;
-        if (!(creeper.level() instanceof ServerLevel level)) return;
+        if (!(VersionCompat.level(creeper) instanceof ServerLevel level)) return;
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
                 level, EnhancedHordesTweaksConfig.creeperWallExplosionDaysBeforeActivation)) return;
         if (creeper.tickCount % CHECK_INTERVAL_TICKS != 0) return;

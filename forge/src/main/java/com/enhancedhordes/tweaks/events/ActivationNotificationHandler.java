@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.events;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
@@ -12,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -30,7 +32,11 @@ public class ActivationNotificationHandler {
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        //? if >=1.19.2 {
         MinecraftServer server = event.getServer();
+        //?} else {
+        /*MinecraftServer server = ServerLifecycleHooks.getCurrentServer();*/
+        //?}
         if (server.getTickCount() % 20 != 0) return;
 
         ServerLevel overworld = server.overworld();
@@ -91,11 +97,19 @@ public class ActivationNotificationHandler {
         Component text = format(message);
         SoundEvent sound = resolveSound();
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            //? if >=1.19.2 {
             player.sendSystemMessage(text);
+            //?} else {
+            /*player.sendMessage(text, net.minecraft.Util.NIL_UUID);*/
+            //?}
             if (sound != null) {
-                player.connection.send(new ClientboundSoundPacket(
-                        Holder.direct(sound), SoundSource.MASTER,
-                        player.getX(), player.getY(), player.getZ(), 1.0f, 1.0f, 0L));
+                //? if >=1.20.1 {
+                player.connection.send(new ClientboundSoundPacket(Holder.direct(sound), SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 1.0f, 1.0f, 0L));
+                //?} else if >=1.19.2 {
+                /*player.connection.send(new ClientboundSoundPacket(sound, SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 1.0f, 1.0f, 0L));*/
+                //?} else {
+                /*player.connection.send(new ClientboundSoundPacket(sound, SoundSource.MASTER, player.getX(), player.getY(), player.getZ(), 1.0f, 1.0f));*/
+                //?}
             }
         }
     }
@@ -117,7 +131,7 @@ public class ActivationNotificationHandler {
                 sb.append(c);
             }
         }
-        return Component.literal(sb.toString());
+        return VersionCompat.literal(sb.toString());
     }
 
     private static boolean isFormatCode(char c) {

@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.events;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
 import com.enhancedhordes.tweaks.config.ConfigCache;
@@ -8,7 +9,11 @@ import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.monster.Enemy;
+//? if >=1.19.2 {
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+//?} else {
+/*import net.minecraftforge.event.entity.EntityJoinWorldEvent;*/
+//?}
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -24,8 +29,16 @@ public class PassiveFearHandler {
     private enum FearKind { PASSIVE, NEUTRAL, HOSTILE }
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onEntityJoin(EntityJoinLevelEvent event) {
+    //?} else {
+    /*public static void onEntityJoin(EntityJoinWorldEvent event) {*/
+    //?}
+        //? if >=1.19.2 {
         if (event.getLevel().isClientSide()) return;
+        //?} else {
+        /*if (event.getWorld().isClientSide()) return;*/
+        //?}
         if (!(event.getEntity() instanceof PathfinderMob mob)) return;
 
         if (!ConfigCache.isHostilityTarget(mob.getType())) return;
@@ -54,7 +67,7 @@ public class PassiveFearHandler {
         if (!EnhancedHordesTweaksConfig.enableUniversalHostility) return false;
         if (!isFearEnabledFor(kind)) return false;
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
-                candidate.level(), EnhancedHordesTweaksConfig.universalHostilityDaysBeforeActivation)) return false;
+                VersionCompat.level(candidate), EnhancedHordesTweaksConfig.universalHostilityDaysBeforeActivation)) return false;
         return ConfigCache.isHostileMob(candidate.getType());
     }
 

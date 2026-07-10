@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.events;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import net.minecraft.core.BlockPos;
@@ -50,12 +51,16 @@ public class HordeWanderGoal extends Goal {
         } else {
             walkable = DefaultRandomPos.getPosTowards(mob, PICK_RADIUS, PICK_VERTICAL, ahead, Math.PI / 2.0);
             if (walkable != null) {
+                //? if >=1.20.1 {
                 BlockPos bp = BlockPos.containing(walkable);
-                if (avoidWater && !mob.level().getFluidState(bp).isEmpty()) walkable = null;
+                //?} else {
+                /*BlockPos bp = new BlockPos(walkable.x, walkable.y, walkable.z);*/
+                //?}
+                if (avoidWater && !VersionCompat.level(mob).getFluidState(bp).isEmpty()) walkable = null;
                 if (walkable != null && avoidFalls) {
                     BlockPos below = bp.below();
                     int drop = 0;
-                    while (drop < FALL_DROP_LIMIT && mob.level().isEmptyBlock(below)) {
+                    while (drop < FALL_DROP_LIMIT && VersionCompat.level(mob).isEmptyBlock(below)) {
                         drop++;
                         below = below.below();
                     }

@@ -46,10 +46,8 @@ public final class ConfigValidator {
               .append(errors.size())
               .append(" invalid entr").append(errors.size() == 1 ? "y" : "ies").append(":\n");
             for (String err : errors) sb.append("  - ").append(err).append('\n');
-            sb.append("Fix these in config/enhanced_hordes_tweaks-common.toml, then restart.");
-            String msg = sb.toString();
-            LOGGER.error("[Enhanced Hordes Tweaks] {}", msg);
-            throw new RuntimeException(msg);
+            sb.append("These are not present on this Minecraft version and will simply have no effect.");
+            LOGGER.warn("[Enhanced Hordes Tweaks] {}", sb.toString());
         }
 
         LOGGER.info("[Enhanced Hordes Tweaks] Config validation passed.");

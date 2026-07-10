@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.events;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
 import com.enhancedhordes.tweaks.compat.GameStagesCompat;
@@ -10,7 +11,12 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.server.ServerLifecycleHooks;
+//? if >=1.19.2 {
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+//?} else {
+/*import net.minecraftforge.event.entity.EntityLeaveWorldEvent;*/
+//?}
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -43,10 +49,14 @@ public class HordeDeterminationHandler {
     }
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+    //?} else {
+    /*public static void onLivingTick(LivingEvent.LivingUpdateEvent event) {*/
+    //?}
         if (!EnhancedHordesTweaksConfig.enableHordeDetermination) return;
         if (!(event.getEntity() instanceof Mob mob)) return;
-        if (!(mob.level() instanceof ServerLevel level)) return;
+        if (!(VersionCompat.level(mob) instanceof ServerLevel level)) return;
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
                 level, EnhancedHordesTweaksConfig.hordeDeterminationDaysBeforeActivation)) return;
         if (!ConfigCache.isHordeMob(mob.getType())) return;
@@ -116,7 +126,11 @@ public class HordeDeterminationHandler {
     }
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onEntityLeave(EntityLeaveLevelEvent event) {
+    //?} else {
+    /*public static void onEntityLeave(EntityLeaveWorldEvent event) {*/
+    //?}
         if (event.getEntity().isRemoved()) {
             RECORDS.remove(event.getEntity().getUUID());
             FORCED_PERSISTENCE.remove(event.getEntity().getUUID());
@@ -126,10 +140,18 @@ public class HordeDeterminationHandler {
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        //? if >=1.19.2 {
         if (event.getServer().getTickCount() % PRUNE_INTERVAL_TICKS != 0) return;
+        //?} else {
+        /*if (ServerLifecycleHooks.getCurrentServer().getTickCount() % PRUNE_INTERVAL_TICKS != 0) return;*/
+        //?}
         if (RECORDS.isEmpty()) return;
 
+        //? if >=1.19.2 {
         ServerLevel overworld = event.getServer().overworld();
+        //?} else {
+        /*ServerLevel overworld = ServerLifecycleHooks.getCurrentServer().overworld();*/
+        //?}
         long gameTime = overworld.getGameTime();
         int maxTimeMinutes = computeFollowTimeMinutes(overworld);
         long maxTicks = (long) maxTimeMinutes * 60L * 20L;

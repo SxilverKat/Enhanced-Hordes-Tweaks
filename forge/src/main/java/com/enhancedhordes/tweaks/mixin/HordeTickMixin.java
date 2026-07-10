@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.mixin;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import com.enhancedhordes.tweaks.util.BlockSupportUtil;
@@ -50,7 +51,7 @@ public class HordeTickMixin {
     private static void redirectFireSpread(Entity nearbyEntity, int seconds) {
         if (!EnhancedHordesTweaksConfig.hordeFireSpread) return;
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
-                nearbyEntity.level(), EnhancedHordesTweaksConfig.featuresDaysBeforeActivation)) return;
+                VersionCompat.level(nearbyEntity), EnhancedHordesTweaksConfig.featuresDaysBeforeActivation)) return;
         nearbyEntity.setSecondsOnFire(seconds);
     }
 
@@ -63,7 +64,7 @@ public class HordeTickMixin {
     private static void redirectBabyThrow(Entity entity, Vec3 velocity) {
         if (!EnhancedHordesTweaksConfig.hordeBabyThrow) return;
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
-                entity.level(), EnhancedHordesTweaksConfig.featuresDaysBeforeActivation)) return;
+                VersionCompat.level(entity), EnhancedHordesTweaksConfig.featuresDaysBeforeActivation)) return;
         entity.setDeltaMovement(velocity);
     }
 
@@ -80,7 +81,7 @@ public class HordeTickMixin {
             return false;
         }
         if (!EnhancedHordesTweaksConfig.daysElapsedReached(
-                entity.level(), EnhancedHordesTweaksConfig.featuresDaysBeforeActivation)) {
+                VersionCompat.level(entity), EnhancedHordesTweaksConfig.featuresDaysBeforeActivation)) {
             return false;
         }
         if (!EnhancedHordesTweaksConfig.hordeBabyFireSpeedBoost

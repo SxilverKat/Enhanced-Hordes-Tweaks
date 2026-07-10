@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.datapack;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import net.minecraft.network.chat.Component;
@@ -7,7 +8,9 @@ import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+//? if >=1.20.1 {
 import net.minecraft.server.packs.resources.IoSupplier;
+//?}
 import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
@@ -53,6 +56,7 @@ public class EnhancedHordesTweaksPackResources implements PackResources {
         this.jsonCache = Collections.unmodifiableMap(map);
     }
 
+    //? if >=1.20.1 {
     @Nullable
     @Override
     public IoSupplier<InputStream> getRootResource(String... elements) {
@@ -93,6 +97,60 @@ public class EnhancedHordesTweaksPackResources implements PackResources {
     }
 
     @Override
+    public String packId() {
+        return PACK_ID;
+    }
+    //?} else {
+    /*@Nullable
+    @Override
+    public InputStream getRootResource(String fileName) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public InputStream getResource(PackType type, ResourceLocation location) {
+        if (type != PackType.SERVER_DATA) return null;
+        String json = resolveJson(location);
+        if (json == null) return null;
+        return new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public boolean hasResource(PackType type, ResourceLocation location) {
+        return type == PackType.SERVER_DATA && jsonCache.containsKey(location);
+    }
+
+    @Override
+    public String getName() {
+        return PACK_ID;
+    }*/
+    //?}
+
+    //? if >=1.20.1 {
+    //?} else if >=1.19.2 {
+    /*@Override
+    public java.util.Collection<ResourceLocation> getResources(PackType type, String namespace, String path, java.util.function.Predicate<ResourceLocation> filter) {
+        java.util.List<ResourceLocation> out = new java.util.ArrayList<>();
+        if (type != PackType.SERVER_DATA || !namespace.equals("forge")) return out;
+        for (ResourceLocation loc : jsonCache.keySet()) {
+            if ((path.isEmpty() || loc.getPath().startsWith(path + "/")) && filter.test(loc)) out.add(loc);
+        }
+        return out;
+    }*/
+    //?} else {
+    /*@Override
+    public java.util.Collection<ResourceLocation> getResources(PackType type, String namespace, String path, int maxDepth, java.util.function.Predicate<String> filter) {
+        java.util.List<ResourceLocation> out = new java.util.ArrayList<>();
+        if (type != PackType.SERVER_DATA || !namespace.equals("forge")) return out;
+        for (ResourceLocation loc : jsonCache.keySet()) {
+            if ((path.isEmpty() || loc.getPath().startsWith(path + "/")) && filter.test(loc.getPath())) out.add(loc);
+        }
+        return out;
+    }*/
+    //?}
+
+    @Override
     public Set<String> getNamespaces(PackType type) {
         return type == PackType.SERVER_DATA ? Set.of("forge") : Set.of();
     }
@@ -101,18 +159,17 @@ public class EnhancedHordesTweaksPackResources implements PackResources {
     @Nullable
     @Override
     public <T> T getMetadataSection(MetadataSectionSerializer<T> deserializer) throws IOException {
+        //? if >=1.20.1 {
         if (deserializer == PackMetadataSection.TYPE) {
+        //?} else {
+        /*if (deserializer == PackMetadataSection.SERIALIZER) {*/
+        //?}
             return (T) new PackMetadataSection(
-                    Component.literal("Enhanced Hordes Tweaks data"),
+                    VersionCompat.literal("Enhanced Hordes Tweaks data"),
                     15
             );
         }
         return null;
-    }
-
-    @Override
-    public String packId() {
-        return PACK_ID;
     }
 
     @Override

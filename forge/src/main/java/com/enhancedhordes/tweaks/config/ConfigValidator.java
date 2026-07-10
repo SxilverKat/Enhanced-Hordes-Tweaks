@@ -46,17 +46,19 @@ public final class ConfigValidator {
               .append(errors.size())
               .append(" invalid entr").append(errors.size() == 1 ? "y" : "ies").append(":\n");
             for (String err : errors) sb.append("  - ").append(err).append('\n');
-            sb.append("Fix these in config/enhanced_hordes_tweaks-common.toml, then restart.");
-            String msg = sb.toString();
-            LOGGER.error("[Enhanced Hordes Tweaks] {}", msg);
-            throw new RuntimeException(msg);
+            sb.append("These are not present on this Minecraft version and will simply have no effect.");
+            LOGGER.warn("[Enhanced Hordes Tweaks] {}", sb.toString());
         }
 
         LOGGER.info("[Enhanced Hordes Tweaks] Config validation passed.");
     }
 
     private static void validateEntityList(String name, List<? extends String> list, List<String> errors) {
+        //? if >=1.19.2 {
         validateList(name, list, ForgeRegistries.ENTITY_TYPES, "entity type", errors);
+        //?} else {
+        /*validateList(name, list, ForgeRegistries.ENTITIES, "entity type", errors);*/
+        //?}
     }
 
     private static void validateBlockList(String name, List<? extends String> list, List<String> errors) {

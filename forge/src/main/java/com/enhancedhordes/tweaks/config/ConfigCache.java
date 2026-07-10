@@ -1,6 +1,10 @@
 package com.enhancedhordes.tweaks.config;
 
+//? if >=1.20.1 {
 import net.minecraft.core.registries.Registries;
+//?} else {
+/*import net.minecraft.core.Registry;*/
+//?}
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
@@ -92,11 +96,23 @@ public final class ConfigCache {
             if (entry == null) continue;
             if (entry.startsWith("#")) {
                 ResourceLocation rl = ResourceLocation.tryParse(entry.substring(1));
+                //? if >=1.20.1 {
                 if (rl != null) tags.add(TagKey.create(Registries.ENTITY_TYPE, rl));
+                //?} else {
+                /*if (rl != null) tags.add(TagKey.create(Registry.ENTITY_TYPE_REGISTRY, rl));*/
+                //?}
             } else {
                 ResourceLocation rl = ResourceLocation.tryParse(entry);
+                //? if >=1.19.2 {
                 if (rl != null && ForgeRegistries.ENTITY_TYPES.containsKey(rl)) {
+                //?} else {
+                /*if (rl != null && ForgeRegistries.ENTITIES.containsKey(rl)) {*/
+                //?}
+                    //? if >=1.19.2 {
                     EntityType<?> type = ForgeRegistries.ENTITY_TYPES.getValue(rl);
+                    //?} else {
+                    /*EntityType<?> type = ForgeRegistries.ENTITIES.getValue(rl);*/
+                    //?}
                     if (type != null) ids.add(type);
                 }
             }
@@ -110,7 +126,11 @@ public final class ConfigCache {
             if (entry == null) continue;
             if (entry.startsWith("#")) {
                 ResourceLocation rl = ResourceLocation.tryParse(entry.substring(1));
+                //? if >=1.20.1 {
                 if (rl != null) tags.add(TagKey.create(Registries.BLOCK, rl));
+                //?} else {
+                /*if (rl != null) tags.add(TagKey.create(Registry.BLOCK_REGISTRY, rl));*/
+                //?}
             } else {
                 ResourceLocation rl = ResourceLocation.tryParse(entry);
                 if (rl != null && ForgeRegistries.BLOCKS.containsKey(rl)) {

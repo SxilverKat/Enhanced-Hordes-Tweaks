@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.command;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
 import com.enhancedhordes.tweaks.compat.GameStagesCompat;
@@ -28,7 +29,7 @@ public class EhtCommandHandler {
         ServerLevel level = source.getLevel();
         long day = level.getGameTime() / 24000L;
 
-        send(source, Component.literal("=== Enhanced Hordes Tweaks ===").withStyle(ChatFormatting.GOLD));
+        send(source, VersionCompat.literal("=== Enhanced Hordes Tweaks ===").withStyle(ChatFormatting.GOLD));
         info(source, "Day", String.valueOf(day));
         info(source, "Difficulty preset", EnhancedHordesTweaksConfig.difficultyPreset.name());
         info(source, "Global night-only", onOff(EnhancedHordesTweaksConfig.globalNightOnly));
@@ -104,24 +105,24 @@ public class EhtCommandHandler {
     private static void feature(CommandSourceStack source, String name, boolean enabled, long day,
                                 int threshold, String detail) {
         if (!enabled) {
-            send(source, Component.literal(name + ": ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal("disabled").withStyle(ChatFormatting.DARK_GRAY)));
+            send(source, VersionCompat.literal(name + ": ").withStyle(ChatFormatting.GRAY)
+                    .append(VersionCompat.literal("disabled").withStyle(ChatFormatting.DARK_GRAY)));
             return;
         }
         boolean active = day >= threshold;
         Component status = active
-                ? Component.literal("active").withStyle(ChatFormatting.GREEN)
-                : Component.literal("waiting (day " + threshold + ")").withStyle(ChatFormatting.YELLOW);
-        Component line = Component.literal(name + ": ").withStyle(ChatFormatting.WHITE).append(status);
+                ? VersionCompat.literal("active").withStyle(ChatFormatting.GREEN)
+                : VersionCompat.literal("waiting (day " + threshold + ")").withStyle(ChatFormatting.YELLOW);
+        Component line = VersionCompat.literal(name + ": ").withStyle(ChatFormatting.WHITE).append(status);
         if (detail != null && !detail.isEmpty()) {
-            line = line.copy().append(Component.literal(" [" + detail + "]").withStyle(ChatFormatting.AQUA));
+            line = line.copy().append(VersionCompat.literal(" [" + detail + "]").withStyle(ChatFormatting.AQUA));
         }
         send(source, line);
     }
 
     private static void info(CommandSourceStack source, String name, String value) {
-        send(source, Component.literal(name + ": ").withStyle(ChatFormatting.WHITE)
-                .append(Component.literal(value).withStyle(ChatFormatting.AQUA)));
+        send(source, VersionCompat.literal(name + ": ").withStyle(ChatFormatting.WHITE)
+                .append(VersionCompat.literal(value).withStyle(ChatFormatting.AQUA)));
     }
 
     private static String onOff(boolean value) {
@@ -129,6 +130,10 @@ public class EhtCommandHandler {
     }
 
     private static void send(CommandSourceStack source, Component component) {
+        //? if >=1.20.1 {
         source.sendSuccess(() -> component, false);
+        //?} else {
+        /*source.sendSuccess(component, false);*/
+        //?}
     }
 }

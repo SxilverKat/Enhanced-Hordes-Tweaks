@@ -362,7 +362,7 @@ public class EnhancedHordesTweaksConfig {
                 "Entity types that count as 'horde' mobs. Accepts entity IDs and entity tags.",
                 "These mobs will stack on each other and multiply (dig up more mobs)."
             )
-            .defineListAllowEmpty("entityTags.hordeMobs",
+            .defineListAllowEmpty(List.of("entityTags", "hordeMobs"), () ->
                     List.of(
                             "minecraft:zombie",
                             "minecraft:zombie_villager",
@@ -380,7 +380,7 @@ public class EnhancedHordesTweaksConfig {
                 "These mobs can coordinate attacks and dash away.",
                 "Accepts entity IDs and entity tags."
             )
-            .defineListAllowEmpty("entityTags.intelligentTeamMobs",
+            .defineListAllowEmpty(List.of("entityTags", "intelligentTeamMobs"), () ->
                     List.of(
                             "minecraft:skeleton",
                             "minecraft:wither_skeleton",
@@ -394,7 +394,7 @@ public class EnhancedHordesTweaksConfig {
                 "Entity types that can leap at targets.",
                 "Accepts entity IDs and entity tags."
             )
-            .defineListAllowEmpty("entityTags.leapingMobs",
+            .defineListAllowEmpty(List.of("entityTags", "leapingMobs"), () ->
                     List.of(
                             "minecraft:spider",
                             "minecraft:cave_spider",
@@ -410,7 +410,7 @@ public class EnhancedHordesTweaksConfig {
                 "Entity types that can dig up (spawn) other horde mobs from the ground.",
                 "Accepts entity IDs and entity tags."
             )
-            .defineListAllowEmpty("entityTags.graveRobbers",
+            .defineListAllowEmpty(List.of("entityTags", "graveRobbers"), () ->
                     List.of(
                             "minecraft:zombie",
                             "minecraft:husk",
@@ -424,7 +424,7 @@ public class EnhancedHordesTweaksConfig {
                 "Piglin entity types that receive intelligent behavior.",
                 "Accepts entity IDs and entity tags."
             )
-            .defineListAllowEmpty("entityTags.intelligentPiglins",
+            .defineListAllowEmpty(List.of("entityTags", "intelligentPiglins"), () ->
                     List.of(
                             "minecraft:piglin",
                             "minecraft:piglin_brute",
@@ -443,7 +443,7 @@ public class EnhancedHordesTweaksConfig {
                 "Horde mobs will sink into these blocks and ambush players.",
                 "Accepts block IDs and block tags."
             )
-            .defineListAllowEmpty("blockTags.hiddenZombieBlocks",
+            .defineListAllowEmpty(List.of("blockTags", "hiddenZombieBlocks"), () ->
                     List.of(
                             "#minecraft:dirt",
                             "#forge:sand",
@@ -460,7 +460,7 @@ public class EnhancedHordesTweaksConfig {
                 "Blocks that horde mobs can break while pathfinding.",
                 "Accepts block IDs and block tags."
             )
-            .defineListAllowEmpty("blockTags.hordeBreakableBlocks",
+            .defineListAllowEmpty(List.of("blockTags", "hordeBreakableBlocks"), () ->
                     List.of(
                             "#minecraft:leaves",
                             "#minecraft:crops",
@@ -828,7 +828,7 @@ public class EnhancedHordesTweaksConfig {
                 "Blocks breakable by a group of tier1MinMobs or more horde mobs.",
                 "Accepts block IDs and block tags."
             )
-            .defineListAllowEmpty("hordeMentality.tier1Blocks",
+            .defineListAllowEmpty(List.of("hordeMentality", "tier1Blocks"), () ->
                     List.of(
                             "#minecraft:wooden_doors",
                             "#minecraft:wooden_trapdoors",
@@ -914,7 +914,7 @@ public class EnhancedHordesTweaksConfig {
                 "Blocks breakable by a group of tier2MinMobs or more horde mobs.",
                 "Accepts block IDs and block tags."
             )
-            .defineListAllowEmpty("hordeMentality.tier2Blocks",
+            .defineListAllowEmpty(List.of("hordeMentality", "tier2Blocks"), () ->
                     List.of(
                             "#minecraft:planks",
                             "#minecraft:wooden_slabs",
@@ -969,7 +969,7 @@ public class EnhancedHordesTweaksConfig {
                 "Blocks breakable by a group of tier3MinMobs or more horde mobs.",
                 "Accepts block IDs and block tags."
             )
-            .defineListAllowEmpty("hordeMentality.tier3Blocks",
+            .defineListAllowEmpty(List.of("hordeMentality", "tier3Blocks"), () ->
                     List.of(
                             "#forge:cobblestone",
                             "#forge:sandstone",
@@ -1015,7 +1015,7 @@ public class EnhancedHordesTweaksConfig {
                 "Blocks breakable by a group of tier4MinMobs or more horde mobs.",
                 "Accepts block IDs and block tags."
             )
-            .defineListAllowEmpty("hordeMentality.tier4Blocks",
+            .defineListAllowEmpty(List.of("hordeMentality", "tier4Blocks"), () ->
                     List.of(
                             "#forge:stone",
                             "#forge:ores",
@@ -1046,7 +1046,7 @@ public class EnhancedHordesTweaksConfig {
                 "Blocks that horde mobs can NEVER break, even if they appear in a tier list.",
                 "Accepts block IDs and block tags."
             )
-            .defineListAllowEmpty("hordeMentality.blacklistBlocks",
+            .defineListAllowEmpty(List.of("hordeMentality", "blacklistBlocks"), () ->
                     List.of(),
                     obj -> obj instanceof String
             );
@@ -1121,7 +1121,7 @@ public class EnhancedHordesTweaksConfig {
                 "Mobs that will be universally hostile toward everything in hostilityTargetMobs.",
                 "Accepts entity IDs and entity tags."
             )
-            .defineListAllowEmpty("universalHostility.hostileMobs",
+            .defineListAllowEmpty(List.of("universalHostility", "hostileMobs"), () ->
                     List.of(
                             "minecraft:zombie",
                             "minecraft:zombie_villager",
@@ -1136,7 +1136,7 @@ public class EnhancedHordesTweaksConfig {
                 "Mobs that will be targeted by every mob listed in hostileMobs.",
                 "Accepts entity IDs and entity tags."
             )
-            .defineListAllowEmpty("universalHostility.hostilityTargetMobs",
+            .defineListAllowEmpty(List.of("universalHostility", "hostilityTargetMobs"), () ->
                     List.of(
                             "minecraft:cow",
                             "minecraft:pig",

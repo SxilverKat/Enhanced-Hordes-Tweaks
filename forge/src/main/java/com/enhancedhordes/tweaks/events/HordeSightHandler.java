@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks.events;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
 import com.enhancedhordes.tweaks.config.ConfigCache;
@@ -23,11 +24,15 @@ public class HordeSightHandler {
     private static final double MAX_SIGHT_BONUS = 256.0;
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+    //?} else {
+    /*public static void onLivingTick(LivingEvent.LivingUpdateEvent event) {*/
+    //?}
         if (EnhancedHordesTweaksConfig.hordeSightRangeBonus <= 0
                 && !EnhancedHordesTweaksConfig.hordeSightIncreaseOverTime) return;
         if (!(event.getEntity() instanceof Mob mob)) return;
-        if (!(mob.level() instanceof ServerLevel level)) return;
+        if (!(VersionCompat.level(mob) instanceof ServerLevel level)) return;
         if (mob.tickCount % REFRESH_INTERVAL_TICKS != 0) return;
         if (!ConfigCache.isHordeMob(mob.getType())) return;
 

@@ -5,7 +5,6 @@ import com.enhancedhordes.tweaks.compat.GameStagesCompat;
 import com.enhancedhordes.tweaks.config.ConfigCache;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import com.mojang.brigadier.tree.CommandNode;
-import net.mcreator.horde_hoard.init.EnhancedHordesModGameRules;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -16,10 +15,15 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+//? if >=1.19.2 {
 import net.minecraftforge.event.level.LevelEvent;
+//?} else {
+/*import net.minecraftforge.event.world.WorldEvent;*/
+//?}
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -44,6 +48,11 @@ public class GameRuleHandler {
     @Nullable private static final Field COMMAND_NODE_CHILDREN;
     @Nullable private static final Field COMMAND_NODE_LITERALS;
 
+    private static boolean gameRuleKeysResolved = false;
+    @Nullable private static GameRules.Key<GameRules.BooleanValue> grHordeStacking;
+    @Nullable private static GameRules.Key<GameRules.BooleanValue> grHordeMultiplying;
+    @Nullable private static GameRules.Key<GameRules.IntegerValue> grIronGolemRegenPower;
+
     static {
         Field children = null;
         Field literals = null;
@@ -57,6 +66,29 @@ public class GameRuleHandler {
         }
         COMMAND_NODE_CHILDREN = children;
         COMMAND_NODE_LITERALS = literals;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void resolveGameRuleKeys() {
+        if (gameRuleKeysResolved) return;
+        gameRuleKeysResolved = true;
+        Class<?> cls = null;
+        for (String name : new String[]{
+                "net.mcreator.horde_hoard.init.EnhancedHordesModGameRules",
+                "net.mcreator.horde_hoard.init.HordeHoardModGameRules"}) {
+            try { cls = Class.forName(name); break; } catch (Throwable ignored) {}
+        }
+        if (cls == null) {
+            LOGGER.error("[Enhanced Hordes Tweaks] Could not locate the Enhanced Hordes game rules class.");
+            return;
+        }
+        try {
+            grHordeStacking = (GameRules.Key<GameRules.BooleanValue>) cls.getField("HORDESTACKING").get(null);
+            grHordeMultiplying = (GameRules.Key<GameRules.BooleanValue>) cls.getField("HORDEMULTIPLYING").get(null);
+            grIronGolemRegenPower = (GameRules.Key<GameRules.IntegerValue>) cls.getField("IRONGOLEMREGENPOWER").get(null);
+        } catch (Throwable t) {
+            LOGGER.error("[Enhanced Hordes Tweaks] Failed to resolve Enhanced Hordes game rule keys: {}", t.getMessage());
+        }
     }
 
     @SubscribeEvent
@@ -94,8 +126,16 @@ public class GameRuleHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
+    //? if >=1.19.2 {
     public static void onLevelLoadFriendlyFire(LevelEvent.Load event) {
+    //?} else {
+    /*public static void onLevelLoadFriendlyFire(WorldEvent.Load event) {*/
+    //?}
+        //? if >=1.19.2 {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        //?} else {
+        /*if (!(event.getWorld() instanceof ServerLevel level)) return;*/
+        //?}
         if (level.dimension() != Level.OVERWORLD) return;
 
         PlayerTeam team = level.getScoreboard().getPlayerTeam("intelligentmobs");
@@ -119,7 +159,11 @@ public class GameRuleHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
+    //? if >=1.19.2 {
     public static void onLivingTickDashDistance(LivingEvent.LivingTickEvent event) {
+    //?} else {
+    /*public static void onLivingTickDashDistance(LivingEvent.LivingUpdateEvent event) {*/
+    //?}
         if (!(event.getEntity() instanceof Mob mob)) return;
 
         LivingEntity target = mob.getTarget();
@@ -141,17 +185,28 @@ public class GameRuleHandler {
     }
 
     @SubscribeEvent
+    //? if >=1.19.2 {
     public static void onLevelLoad(LevelEvent.Load event) {
+    //?} else {
+    /*public static void onLevelLoad(WorldEvent.Load event) {*/
+    //?}
+        //? if >=1.19.2 {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        //?} else {
+        /*if (!(event.getWorld() instanceof ServerLevel level)) return;*/
+        //?}
         if (level.dimension() != Level.OVERWORLD) return;
+
+        resolveGameRuleKeys();
+        if (grHordeStacking == null || grHordeMultiplying == null || grIronGolemRegenPower == null) return;
 
         GameRules rules = level.getGameRules();
 
-        rules.getRule(EnhancedHordesModGameRules.HORDESTACKING)
+        rules.getRule(grHordeStacking)
                 .set(EnhancedHordesTweaksConfig.enableHordeStacking, null);
-        rules.getRule(EnhancedHordesModGameRules.HORDEMULTIPLYING)
+        rules.getRule(grHordeMultiplying)
                 .set(EnhancedHordesTweaksConfig.enableHordeMultiplying, null);
-        rules.getRule(EnhancedHordesModGameRules.IRONGOLEMREGENPOWER)
+        rules.getRule(grIronGolemRegenPower)
                 .set(EnhancedHordesTweaksConfig.enableIronGolemRegen
                         ? EnhancedHordesTweaksConfig.ironGolemRegenPower : 0, null);
         lastMultiplyingValue = null;
@@ -162,14 +217,25 @@ public class GameRuleHandler {
     @SubscribeEvent
     public static void onServerTickMultiplying(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        //? if >=1.19.2 {
         if (event.getServer().getTickCount() % 20 != 0) return;
+        //?} else {
+        /*if (ServerLifecycleHooks.getCurrentServer().getTickCount() % 20 != 0) return;*/
+        //?}
 
+        resolveGameRuleKeys();
+        if (grHordeMultiplying == null) return;
+
+        //? if >=1.19.2 {
         ServerLevel overworld = event.getServer().overworld();
+        //?} else {
+        /*ServerLevel overworld = ServerLifecycleHooks.getCurrentServer().overworld();*/
+        //?}
         boolean desired = EnhancedHordesTweaksConfig.enableHordeMultiplying
                 && GameStagesCompat.anyPlayerHasStage(overworld, EnhancedHordesTweaksConfig.hordeMultiplyingStage);
         if (lastMultiplyingValue != null && lastMultiplyingValue == desired) return;
 
-        overworld.getGameRules().getRule(EnhancedHordesModGameRules.HORDEMULTIPLYING).set(desired, null);
+        overworld.getGameRules().getRule(grHordeMultiplying).set(desired, null);
         lastMultiplyingValue = desired;
     }
 }

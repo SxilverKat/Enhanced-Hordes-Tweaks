@@ -1,4 +1,5 @@
 package com.enhancedhordes.tweaks;
+import com.enhancedhordes.tweaks.util.VersionCompat;
 
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import com.enhancedhordes.tweaks.datapack.EnhancedHordesTweaksPackResources;
@@ -34,10 +35,11 @@ public class EnhancedHordesTweaksMod {
     public void onAddPackFinders(AddPackFindersEvent event) {
         if (event.getPackType() != PackType.SERVER_DATA) return;
 
+        //? if >=1.20.1 {
         event.addRepositorySource(consumer -> {
             Pack pack = Pack.readMetaAndCreate(
                     "builtin/enhanced_hordes_tweaks",
-                    Component.literal("Enhanced Hordes Tweaks"),
+                    VersionCompat.literal("Enhanced Hordes Tweaks"),
                     true,
                     id -> new EnhancedHordesTweaksPackResources(),
                     PackType.SERVER_DATA,
@@ -50,5 +52,22 @@ public class EnhancedHordesTweaksMod {
                 LOGGER.error("[Enhanced Hordes Tweaks] Failed to create built-in data pack. Tag overrides will not apply.");
             }
         });
+        //?} else {
+        /*event.addRepositorySource((consumer, constructor) -> {
+            Pack pack = Pack.create(
+                    "builtin/enhanced_hordes_tweaks",
+                    true,
+                    () -> new EnhancedHordesTweaksPackResources(),
+                    constructor,
+                    Pack.Position.TOP,
+                    PackSource.BUILT_IN
+            );
+            if (pack != null) {
+                consumer.accept(pack);
+            } else {
+                LOGGER.error("[Enhanced Hordes Tweaks] Failed to create built-in data pack. Tag overrides will not apply.");
+            }
+        });*/
+        //?}
     }
 }
