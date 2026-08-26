@@ -29,12 +29,12 @@ public class HordeTickMixin {
             "execute(Lnet/minecraftforge/eventbus/api/Event;" +
             "Lnet/minecraft/world/level/LevelAccessor;DDDLnet/minecraft/world/entity/Entity;)V";
 
-    private static final ThreadLocal<Entity> CURRENT_ENTITY = new ThreadLocal<>();
+    private static final ThreadLocal<java.lang.ref.WeakReference<Entity>> CURRENT_ENTITY = new ThreadLocal<>();
 
     @Inject(method = EXECUTE, at = @At("HEAD"), remap = false)
     private static void captureCurrentEntity(Event ev, LevelAccessor level, double x, double y, double z,
                                              Entity entity, CallbackInfo ci) {
-        CURRENT_ENTITY.set(entity);
+        CURRENT_ENTITY.set(new java.lang.ref.WeakReference<>(entity));
     }
 
     @Inject(method = EXECUTE, at = @At("RETURN"), remap = false)
@@ -125,7 +125,8 @@ public class HordeTickMixin {
                         concrete, EnhancedHordesTweaksConfig.featuresDaysBeforeActivation)) {
             return false;
         }
-        Entity currentEntity = CURRENT_ENTITY.get();
+        java.lang.ref.WeakReference<Entity> ref = CURRENT_ENTITY.get();
+        Entity currentEntity = ref == null ? null : ref.get();
         if (!EnhancedHordesTweaksConfig.hordeBabyBlockBreaking
                 && currentEntity instanceof Mob mob && mob.isBaby()) {
             return false;

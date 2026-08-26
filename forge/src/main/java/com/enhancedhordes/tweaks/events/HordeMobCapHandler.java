@@ -65,6 +65,8 @@ public class HordeMobCapHandler {
 
         if (cache.count >= cap) {
             event.setCanceled(true);
+        } else {
+            cache.count++;
         }
     }
 

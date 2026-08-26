@@ -27,6 +27,6 @@ for (it in stonecutter.tree.nodes) {
     val loader = it.branch.id.upperCaseFirst()
     for (type in types) tasks.register("runActive$type$loader") {
         group = "project"
-        dependsOn("${it.hierarchy}run$type")
+        dependsOn("${it.hierarchy}:run$type")
     }
 }

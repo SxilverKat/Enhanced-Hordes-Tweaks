@@ -29,8 +29,6 @@ public class HordeSightHandler {
     //?} else {
     /*public static void onLivingTick(LivingEvent.LivingUpdateEvent event) {*/
     //?}
-        if (EnhancedHordesTweaksConfig.hordeSightRangeBonus <= 0
-                && !EnhancedHordesTweaksConfig.hordeSightIncreaseOverTime) return;
         if (!(event.getEntity() instanceof Mob mob)) return;
         if (!(VersionCompat.level(mob) instanceof ServerLevel level)) return;
         if (mob.tickCount % REFRESH_INTERVAL_TICKS != 0) return;
@@ -39,7 +37,9 @@ public class HordeSightHandler {
         AttributeInstance inst = mob.getAttribute(Attributes.FOLLOW_RANGE);
         if (inst == null) return;
 
-        double targetBonus = computeBonus(level);
+        boolean featureEnabled = EnhancedHordesTweaksConfig.hordeSightRangeBonus > 0
+                || EnhancedHordesTweaksConfig.hordeSightIncreaseOverTime;
+        double targetBonus = featureEnabled ? computeBonus(level) : 0.0;
         AttributeModifier existing = inst.getModifier(SIGHT_MODIFIER_ID);
         double currentBonus = existing == null ? 0.0 : existing.getAmount();
         if (Math.abs(currentBonus - targetBonus) < 1.0e-6) return;

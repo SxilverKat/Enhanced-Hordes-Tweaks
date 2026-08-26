@@ -50,9 +50,13 @@ public class EnhancedHordesTweaksPackResources implements PackResources {
                 LOC_GRAVE_ROBBERS, LOC_INTELLIGENT_PIGLINS,
                 LOC_HIDDEN_ZOMBIE_BLOCKS, LOC_HORDE_BREAKABLE)) {
             String json = buildJson(loc);
-            if (json != null) map.put(loc, json);
+            if (json != null) map.put(fileLocation(loc), json);
         }
         this.jsonCache = Collections.unmodifiableMap(map);
+    }
+
+    private static ResourceLocation fileLocation(ResourceLocation loc) {
+        return ResourceLocation.fromNamespaceAndPath(loc.getNamespace(), loc.getPath() + ".json");
     }
 
     @Nullable
@@ -85,11 +89,12 @@ public class EnhancedHordesTweaksPackResources implements PackResources {
     }
 
     private void checkAndOutput(ResourceLocation loc, String pathPrefix, PackResources.ResourceOutput output) {
-        if (pathPrefix.isEmpty() || loc.getPath().startsWith(pathPrefix + "/")) {
-            String json = resolveJson(loc);
+        ResourceLocation fileLoc = fileLocation(loc);
+        if (pathPrefix.isEmpty() || fileLoc.getPath().startsWith(pathPrefix + "/")) {
+            String json = resolveJson(fileLoc);
             if (json != null) {
                 byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
-                output.accept(loc, () -> new ByteArrayInputStream(bytes));
+                output.accept(fileLoc, () -> new ByteArrayInputStream(bytes));
             }
         }
     }

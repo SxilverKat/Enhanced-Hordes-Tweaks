@@ -107,8 +107,9 @@ public class IronGolemHandler {
     /*public static void onLivingTickSaveFireTicks(LivingEvent.LivingUpdateEvent event) {*/
     //?}
         if (EnhancedHordesTweaksConfig.enableIronGolemFireImmunity) return;
-        if (!(event.getEntity() instanceof IronGolem)) return;
-        savedFireTicks.put(event.getEntity(), event.getEntity().getRemainingFireTicks());
+        if (!(event.getEntity() instanceof IronGolem golem)) return;
+        if (!(VersionCompat.level(golem) instanceof ServerLevel)) return;
+        savedFireTicks.put(golem, golem.getRemainingFireTicks());
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -118,10 +119,11 @@ public class IronGolemHandler {
     /*public static void onLivingTickRestoreFireTicks(LivingEvent.LivingUpdateEvent event) {*/
     //?}
         if (EnhancedHordesTweaksConfig.enableIronGolemFireImmunity) return;
-        if (!(event.getEntity() instanceof IronGolem)) return;
-        Integer saved = savedFireTicks.remove(event.getEntity());
-        if (saved != null && saved > 0 && event.getEntity().getRemainingFireTicks() <= 0) {
-            event.getEntity().setRemainingFireTicks(Math.max(0, saved - 1));
+        if (!(event.getEntity() instanceof IronGolem golem)) return;
+        if (!(VersionCompat.level(golem) instanceof ServerLevel)) return;
+        Integer saved = savedFireTicks.remove(golem);
+        if (saved != null && saved > 0 && golem.getRemainingFireTicks() <= 0) {
+            golem.setRemainingFireTicks(Math.max(0, saved - 1));
         }
     }
 
@@ -143,6 +145,7 @@ public class IronGolemHandler {
     //?}
         if (!EnhancedHordesTweaksConfig.enableIronGolemRegen) return;
         if (!(event.getEntity() instanceof IronGolem golem)) return;
+        if (!(VersionCompat.level(golem) instanceof ServerLevel serverLevel)) return;
         //? if >=1.19.2 {
         if (event.getEffectInstance().getEffect() != MobEffects.REGENERATION) return;
         //?} else {
@@ -151,12 +154,10 @@ public class IronGolemHandler {
         if (EnhancedHordesTweaksConfig.ironGolemRegenCooldownSeconds <= 0) return;
         Long lastHurt = lastHurtGameTick.get(golem);
         if (lastHurt == null) return;
-        if (VersionCompat.level(golem) instanceof ServerLevel serverLevel) {
-            long cooldownTicks = (long) EnhancedHordesTweaksConfig.ironGolemRegenCooldownSeconds * 20L;
-            long delta = serverLevel.getGameTime() - lastHurt;
-            if (delta >= 0 && delta < cooldownTicks) {
-                event.setResult(Event.Result.DENY);
-            }
+        long cooldownTicks = (long) EnhancedHordesTweaksConfig.ironGolemRegenCooldownSeconds * 20L;
+        long delta = serverLevel.getGameTime() - lastHurt;
+        if (delta >= 0 && delta < cooldownTicks) {
+            event.setResult(Event.Result.DENY);
         }
     }
 

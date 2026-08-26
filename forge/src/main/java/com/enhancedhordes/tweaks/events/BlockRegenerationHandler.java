@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.piston.PistonStructureResolver;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -33,6 +34,12 @@ import net.minecraftforge.event.level.LevelEvent;
 //?} else {
 /*import net.minecraftforge.event.world.WorldEvent;*/
 //?}
+//? if >=1.19.2 {
+import net.minecraftforge.event.level.PistonEvent;
+//?} else {
+/*import net.minecraftforge.event.world.PistonEvent;*/
+//?}
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.Nullable;
@@ -50,9 +57,10 @@ public class BlockRegenerationHandler {
 
     private static final Map<ResourceKey<Level>, LevelRegenData> levelData = new HashMap<>();
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
         if (!EnhancedHordesTweaksConfig.enableBlockRegeneration) return;
+        if (event.isCanceled()) return;
         //? if >=1.19.2 {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         //?} else {
@@ -74,10 +82,11 @@ public class BlockRegenerationHandler {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockPlace(BlockEvent.EntityPlaceEvent event) {
         if (!EnhancedHordesTweaksConfig.enableBlockRegeneration) return;
         if (!EnhancedHordesTweaksConfig.cancelRegenOnPlayerPlace) return;
+        if (event.isCanceled()) return;
         if (!(event.getEntity() instanceof Player)) return;
         //? if >=1.19.2 {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
@@ -108,6 +117,37 @@ public class BlockRegenerationHandler {
     }
 
     @SubscribeEvent
+    public static void onPistonMove(PistonEvent.Pre event) {
+        if (!EnhancedHordesTweaksConfig.enableBlockRegeneration) return;
+        //? if >=1.19.2 {
+        if (!(event.getLevel() instanceof ServerLevel level)) return;
+        //?} else {
+        /*if (!(event.getWorld() instanceof ServerLevel level)) return;*/
+        //?}
+        LevelRegenData data = levelData.get(level.dimension());
+        if (data == null) return;
+
+        PistonStructureResolver resolver = event.getStructureHelper();
+        if (resolver == null) return;
+
+        Direction pushDirection = resolver.getPushDirection();
+        for (BlockPos pos : resolver.getToPush()) {
+            forgetPosition(data, pos);
+            forgetPosition(data, pos.relative(pushDirection));
+        }
+        for (BlockPos pos : resolver.getToDestroy()) {
+            forgetPosition(data, pos);
+        }
+    }
+
+    private static void forgetPosition(LevelRegenData data, BlockPos pos) {
+        data.prevSnapshot.remove(pos);
+        data.regenQueue.remove(pos);
+        data.waitingForClear.remove(pos);
+        data.pausedRegen.remove(pos);
+    }
+
+    @SubscribeEvent
     //? if >=1.19.2 {
     public static void onLevelTick(TickEvent.LevelTickEvent event) {
     //?} else {
@@ -125,17 +165,17 @@ public class BlockRegenerationHandler {
         data.ticksSinceLastScan++;
         boolean scanTick = data.ticksSinceLastScan >= SCAN_INTERVAL;
 
-        List<BlockPos> mobPositions = (scanTick || !data.regenQueue.isEmpty())
-                ? collectHordeMobPositions(level) : null;
-
         if (scanTick) {
             data.ticksSinceLastScan = 0;
+            List<BlockPos> mobPositions = collectHordeMobPositions(level);
             scanForBreaks(level, data, mobPositions);
             processWaitingForClear(level, data, mobPositions);
             processPausedRegen(level, data, mobPositions);
+            processRegenQueue(level, data, mobPositions);
+            return;
         }
 
-        processRegenQueue(level, data, mobPositions);
+        processRegenQueue(level, data, null);
     }
 
     @SubscribeEvent

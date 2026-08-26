@@ -1,15 +1,20 @@
 package com.enhancedhordes.tweaks.compat;
 
+import com.enhancedhordes.tweaks.EnhancedHordesTweaksMod;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.common.Mod;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Mod.EventBusSubscriber(modid = EnhancedHordesTweaksMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class GameStagesCompat {
 
     private static final boolean LOADED = ModList.get().isLoaded("gamestages");
@@ -21,6 +26,11 @@ public final class GameStagesCompat {
     private static final Map<String, CacheEntry> ANY_PLAYER_CACHE = new ConcurrentHashMap<>();
 
     private GameStagesCompat() {}
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event) {
+        ANY_PLAYER_CACHE.clear();
+    }
 
     public static boolean isLoaded() {
         return LOADED;
@@ -40,8 +50,9 @@ public final class GameStagesCompat {
 
         int tick = level.getServer().getTickCount();
         CacheEntry cached = ANY_PLAYER_CACHE.get(stage);
-        if (cached != null && tick - cached.tick < CACHE_TTL_TICKS) {
-            return cached.value;
+        if (cached != null) {
+            int age = tick - cached.tick;
+            if (age >= 0 && age < CACHE_TTL_TICKS) return cached.value;
         }
 
         boolean result = false;

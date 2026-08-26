@@ -436,12 +436,18 @@ public class HordeMentalityHandler {
     }
 
     private static void showProgress(ServerLevel level, LevelMentalityData data, BlockPos pos, int stage) {
-        level.destroyBlockProgress(breakerId(data, pos), pos, stage);
+        Integer shown = data.shownStage.get(pos);
+        if (shown != null && shown == stage) return;
+        int id = breakerId(data, pos);
+        data.shownStage.put(pos.immutable(), stage);
+        level.destroyBlockProgress(id, pos, stage);
     }
 
     private static void clearProgress(ServerLevel level, LevelMentalityData data, BlockPos pos) {
         Integer id = data.breakerIds.remove(pos);
-        level.destroyBlockProgress(id != null ? id : pos.hashCode(), pos, -1);
+        data.shownStage.remove(pos);
+        if (id == null) return;
+        level.destroyBlockProgress(id, pos, -1);
     }
 
     private static class LevelMentalityData {
@@ -449,6 +455,7 @@ public class HordeMentalityHandler {
         final Map<BlockPos, Long> lastDamagedTick = new HashMap<>();
         final Map<UUID, Long> mobLastSwingTick = new HashMap<>();
         final Map<BlockPos, Integer> breakerIds = new HashMap<>();
+        final Map<BlockPos, Integer> shownStage = new HashMap<>();
         int nextBreakerId = 1;
     }
 }

@@ -47,11 +47,14 @@ public class ActivationNotificationHandler {
             return;
         }
 
+        if (!EnhancedHordesTweaksConfig.enableActivationNotifications) {
+            lastDay = day;
+            return;
+        }
+        if (server.getPlayerList().getPlayers().isEmpty()) return;
+
         long from = lastDay;
         lastDay = day;
-
-        if (!EnhancedHordesTweaksConfig.enableActivationNotifications) return;
-        if (server.getPlayerList().getPlayers().isEmpty()) return;
 
         check(server, from, day, true,
                 EnhancedHordesTweaksConfig.featuresDaysBeforeActivation,

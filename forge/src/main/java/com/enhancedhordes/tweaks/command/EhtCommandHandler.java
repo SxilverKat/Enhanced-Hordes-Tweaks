@@ -65,16 +65,7 @@ public class EhtCommandHandler {
                         EnhancedHordesTweaksConfig.collectiveUnderstandingIncreaseIntervalDays,
                         EnhancedHordesTweaksConfig.collectiveUnderstandingIncreaseAmount, 128, day));
 
-        feature(source, "Horde Sight",
-                EnhancedHordesTweaksConfig.hordeSightRangeBonus > 0
-                        || EnhancedHordesTweaksConfig.hordeSightIncreaseOverTime,
-                day, EnhancedHordesTweaksConfig.hordeSightDaysBeforeActivation,
-                "bonus " + scaled(
-                        EnhancedHordesTweaksConfig.hordeSightRangeBonus,
-                        EnhancedHordesTweaksConfig.hordeSightIncreaseOverTime,
-                        EnhancedHordesTweaksConfig.hordeSightDaysBeforeActivation,
-                        EnhancedHordesTweaksConfig.hordeSightIncreaseIntervalDays,
-                        EnhancedHordesTweaksConfig.hordeSightIncreaseAmount, 256, day));
+        hordeSight(source, day);
 
         feature(source, "Horde Mentality", EnhancedHordesTweaksConfig.enableHordeMentality, day,
                 EnhancedHordesTweaksConfig.hordeMentalityDaysBeforeActivation,
@@ -84,6 +75,33 @@ public class EhtCommandHandler {
                 EnhancedHordesTweaksConfig.universalHostilityDaysBeforeActivation, "");
 
         return 1;
+    }
+
+    private static void hordeSight(CommandSourceStack source, long day) {
+        boolean overTime = EnhancedHordesTweaksConfig.hordeSightIncreaseOverTime;
+        int threshold = EnhancedHordesTweaksConfig.hordeSightDaysBeforeActivation;
+
+        Component status;
+        if (!overTime) {
+            status = VersionCompat.literal("disabled").withStyle(ChatFormatting.DARK_GRAY);
+        } else if (day < threshold) {
+            status = VersionCompat.literal("waiting (day " + threshold + ")").withStyle(ChatFormatting.YELLOW);
+        } else {
+            status = VersionCompat.literal("active").withStyle(ChatFormatting.GREEN);
+        }
+
+        long bonus = scaled(EnhancedHordesTweaksConfig.hordeSightRangeBonus, overTime, threshold,
+                EnhancedHordesTweaksConfig.hordeSightIncreaseIntervalDays,
+                EnhancedHordesTweaksConfig.hordeSightIncreaseAmount, 256, day);
+
+        send(source, VersionCompat.literal("Horde Sight: ").withStyle(ChatFormatting.WHITE)
+                .append(VersionCompat.literal("Increase Over Time: ").withStyle(ChatFormatting.WHITE))
+                .append(status)
+                .append(VersionCompat.literal(". Increase Amount: ").withStyle(ChatFormatting.WHITE))
+                .append(VersionCompat.literal("+" + EnhancedHordesTweaksConfig.hordeSightIncreaseAmount)
+                        .withStyle(ChatFormatting.AQUA))
+                .append(VersionCompat.literal(". Sight Range Bonus: ").withStyle(ChatFormatting.WHITE))
+                .append(VersionCompat.literal(String.valueOf(bonus)).withStyle(ChatFormatting.AQUA)));
     }
 
     private static long followTime(long day) {

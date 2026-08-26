@@ -5,6 +5,7 @@ import com.enhancedhordes.tweaks.config.ConfigCache;
 import com.enhancedhordes.tweaks.config.EnhancedHordesTweaksConfig;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.monster.Drowned;
 //? if >=1.19.2 {
@@ -36,6 +37,9 @@ public class HordeSwimmingHandler {
 
         if (mob.getNavigation() instanceof GroundPathNavigation gpn) {
             gpn.setCanFloat(true);
+        }
+        for (WrappedGoal wrapped : mob.goalSelector.getAvailableGoals()) {
+            if (wrapped.getGoal() instanceof FloatGoal) return;
         }
         mob.goalSelector.addGoal(0, new FloatGoal(mob));
     }
